@@ -4,7 +4,7 @@
 -------------------------------------------------------------------------------------------------------------
 使用方法:
 
-1.从 [https://down.bobocdn.tk/#s/84dQ3xcQ](https://down.bobocdn.tk/#s/84dQ3xcQ) 下载最新版rdpwrap
+1.从 [https://github.com/loyejaotdiqr47123/rdpwrap/releases](https://github.com/loyejaotdiqr47123/rdpwrap/releases) 下载最新版rdpwrap
 
 2.解压后运行install.bat
 
