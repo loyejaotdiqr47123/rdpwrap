@@ -86,7 +86,7 @@ object MainForm: TMainForm
     OnClick = bLicenseClick
   end
   object gbDiag: TGroupBox
-    Left = 8
+    Left = 24
     Top = 6
     Width = 388
     Height = 77

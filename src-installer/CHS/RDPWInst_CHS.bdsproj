@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">W32ResourceDLL.Personality</Option>
+			<Option Name="ProjectType">ResourceDLL</Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{644AA2F7-1AD5-499D-BE14-69C9A66DF6B9}</Option>
+		</Option>
+	</PersonalityInfo>
+	<W32ResourceDLL.Personality>
+		<Source>
+			<Source Name="MainSource">RDPWInst.dpr</Source>
+		</Source>
+		<Options>
+			<Options Name="BaseLang">2052</Options>
+			<Options Name="TargetName">..\..\bin\RDPWInst.CHS</Options>
+			<Options Name="BRCC_IncludePath"></Options>
+			<Options Name="Company"></Options>
+			<Options Name="Configuration"></Options>
+			<Options Name="Copyright"></Options>
+			<Options Name="Description"></Options>
+			<Options Name="Trademark"></Options>
+			<Options Name="Product"></Options>
+			<Options Name="ProductVersion"></Options>
+			<Options Name="Title"></Options>
+			<Options Name="FileVersion"></Options>
+			<Options Name="Evidence"></Options>
+			<Options Name="KeyFile"></Options>
+			<Options Name="KeyName"></Options>
+		</Options>
+		<FileList>
+			<File FileName="C\Users\bobo\Downloads\rdpwrap-master\rdpwrap-master\bin\RDPWInst_DRC.rc" ContainerId="W32RC" ModuleName="RDPWInst_DRC.rc"/>
+		</FileList>
+	</W32ResourceDLL.Personality>
+</BorlandProject>

@@ -617,7 +617,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://raw.githubusercontent.com/stascorp/rdpwrap/master/res/rdpwrap.ini';
+  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/fuzzy-tribble/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -1129,11 +1129,12 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.6.2');
+  Writeln('RDP Wrapper Library v1.7.1');
   Writeln('Installer v2.6');
-  Writeln('Copyright (C) Stas''M Corp. 2018');
+  Writeln('by stascorp');
+  Writeln('etited by bobo');
+  Writeln('AD:买主机就选lurchrxiut科技，QQ群号:912032742');
   Writeln('');
-
   if (ParamCount < 1)
   or (
     (ParamStr(1) <> '-l')

@@ -27,6 +27,7 @@ type
     mText: TMemo;
     bAccept: TButton;
     bDecline: TButton;
+    procedure mTextChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -40,4 +41,9 @@ implementation
 
 {$R *.dfm}
 
-end.
+eprocedure TLicenseForm.mTextChange(Sender: TObject);
+begin
+
+end;
+
+nd.

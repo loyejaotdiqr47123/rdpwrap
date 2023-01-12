@@ -25,6 +25,7 @@ object LicenseForm: TLicenseForm
     ScrollBars = ssBoth
     TabOrder = 0
     WordWrap = False
+    OnChange = mTextChange
   end
   object bAccept: TButton
     Left = 115
