@@ -18,4 +18,4 @@
                                               （广告）
                                               
                             买共享云主机就选lurchrxiut科技，QQ群号:586305589
-![image](https://down.bobocdn.tk/?explorer/share/file&hash=02e7aaqd6wbl85y5oxBgek3LAX3y2LIe02vgJCpU-2BEXnssnaQqQnsM7lLhl3Gf1Q)
+![image](https://down.bobocdn.tk/?explorer/share/file&hash=4e6bdciG7DTvSbxgTCjqZf0FQLb9ZuQayKYzpWyXTUSYS4qeTla-lDFIFkfIvwlMBA)
