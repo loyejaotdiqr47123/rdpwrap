@@ -17,5 +17,5 @@
  -------------------------------------------------------------------------------------------------------------
                                               （广告）
                                               
-                            买共享云主机就选lurchrxiut科技，QQ群号:912032742
-![image](https://down.bobocdn.tk/?explorer/share/file&hash=c9fbcJijLVN7-nVxGyfLBuutNhMOw9BSmqwiO9iWJ6zCmd_Z9EULRG5zxNAcfeuOCA&name=/1673522304437_temp_qrcode_share_9993.png)
+                            买共享云主机就选lurchrxiut科技，QQ群号:586305589
+![image](https://down.bobocdn.tk/?explorer/share/file&hash=02e7aaqd6wbl85y5oxBgek3LAX3y2LIe02vgJCpU-2BEXnssnaQqQnsM7lLhl3Gf1Q)
