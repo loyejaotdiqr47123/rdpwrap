@@ -617,7 +617,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/urban-octo-spoon/rdpwrap.ini';
+  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/legendary-spork/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -1132,7 +1132,7 @@ begin
   Writeln('RDP Wrapper Library v1.7.2');
   Writeln('Installer v2.6');
   Writeln('by stascorp');
-  Writeln('etited by bobo');
+  Writeln('etited by lurchrxiut-bobo');
   Writeln('AD:买主机就选lurchrxiut科技，QQ群号:586305589');
   Writeln('');
   if (ParamCount < 1)
