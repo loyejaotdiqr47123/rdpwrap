@@ -1129,7 +1129,7 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.7.1');
+  Writeln('RDP Wrapper Library v1.7.2');
   Writeln('Installer v2.6');
   Writeln('by stascorp');
   Writeln('etited by bobo');
