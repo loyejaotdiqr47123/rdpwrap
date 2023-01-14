@@ -1133,7 +1133,7 @@ begin
   Writeln('Installer v2.6');
   Writeln('by stascorp');
   Writeln('etited by bobo');
-  Writeln('AD:买主机就选lurchrxiut科技，QQ群号:912032742');
+  Writeln('AD:买主机就选lurchrxiut科技，QQ群号:586305589');
   Writeln('');
   if (ParamCount < 1)
   or (
