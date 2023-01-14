@@ -1,5 +1,5 @@
 {
-  Copyright 2018 Stas'M Corp.
+  edited bobo
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -617,7 +617,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/fuzzy-tribble/rdpwrap.ini';
+  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/urban-octo-spoon/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
