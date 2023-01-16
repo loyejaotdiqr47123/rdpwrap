@@ -617,7 +617,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/legendary-spork/rdpwrap.ini';
+  URL = 'https://jsdelivr.bobocdn.tk/gh/loyejaotdiqr47123/studious-guacamole/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -1129,7 +1129,7 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.7.2');
+  Writeln('RDP Wrapper Library v1.7.3');
   Writeln('Installer v2.6');
   Writeln('by stascorp');
   Writeln('etited by lurchrxiut-bobo');
