@@ -3,7 +3,7 @@
 			<ProjectGuid>{AF9BEAA3-99CD-4B2E-BE67-3F3BD27B961A}</ProjectGuid>
 			<ProjectVersion>13.4</ProjectVersion>
 			<MainSource>RDPWInst.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<FrameworkType>None</FrameworkType>
 			<Base>True</Base>
