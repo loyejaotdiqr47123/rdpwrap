@@ -1,24 +1,17 @@
 {
-  edited bobo
-
+  Copyright 2018 Stas'M Corp.
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-
       http://www.apache.org/licenses/LICENSE-2.0
-
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
 }
-
 program RDPWInst;
-
 {$APPTYPE CONSOLE}
-
-{$R resource.res}
 
 uses
   SysUtils,
@@ -42,12 +35,10 @@ function EnumServicesStatusEx(
   lpResumeHandle: DWORD;
   pszGroupName: PWideChar): BOOL; stdcall;
   external advapi32 name 'EnumServicesStatusExW';
-
 function ConvertStringSidToSid(
   StringSid: PWideChar;
   var Sid: PSID): BOOL; stdcall;
   external advapi32 name 'ConvertStringSidToSidW';
-
 type
   FILE_VERSION = record
     Version: record case Boolean of
@@ -77,7 +68,6 @@ type
     ServiceStatusProcess: SERVICE_STATUS_PROCESS;
   end;
   PENUM_SERVICE_STATUS_PROCESS = ^ENUM_SERVICE_STATUS_PROCESS;
-
 const
   SC_ENUM_PROCESS_INFO = 0;
   TermService = 'TermService';
@@ -87,13 +77,11 @@ var
   WrapPath: String;
   Arch: Byte;
   OldWow64RedirectionValue: LongBool;
-
   TermServicePath: String;
   FV: FILE_VERSION;
   TermServicePID: DWORD;
   ShareSvc: Array of String;
   sShareSvc: String;
-
 function SupportedArchitecture: Boolean;
 var
   SI: TSystemInfo;
@@ -113,7 +101,6 @@ begin
     else Result := False;
   end;
 end;
-
 function DisableWowRedirection: Boolean;
 type
   TFunc = function(var Wow64FsEnableRedirection: LongBool): LongBool; stdcall;
@@ -130,7 +117,6 @@ begin
   if @Wow64DisableWow64FsRedirection <> nil then
     Result := Wow64DisableWow64FsRedirection(OldWow64RedirectionValue);
 end;
-
 function RevertWowRedirection: Boolean;
 type
   TFunc = function(var Wow64RevertWow64FsRedirection: LongBool): LongBool; stdcall;
@@ -147,7 +133,6 @@ begin
   if @Wow64RevertWow64FsRedirection <> nil then
     Result := Wow64RevertWow64FsRedirection(OldWow64RedirectionValue);
 end;
-
 procedure CheckInstall;
 var
   Code: DWORD;
@@ -194,10 +179,8 @@ begin
     Halt(ERROR_NOT_SUPPORTED);
   end;
   Reg.Free;
-
   Installed := Pos('rdpwrap.dll', LowerCase(TermServicePath)) > 0;
 end;
-
 function SvcGetStart(SvcName: String): Integer;
 var
   hSC: SC_HANDLE;
@@ -216,7 +199,6 @@ begin
     Writeln('[-] OpenSCManager error (code ', Code, ').');
     Exit;
   end;
-
   hSvc := OpenService(hSC, PWideChar(SvcName), SERVICE_QUERY_CONFIG);
   if hSvc = 0 then
   begin
@@ -225,15 +207,12 @@ begin
     Writeln('[-] OpenService error (code ', Code, ').');
     Exit;
   end;
-
   if QueryServiceConfig(hSvc, nil, 0, pcbBytesNeeded) then begin
     Writeln('[-] QueryServiceConfig failed.');
     Exit;
   end;
-
   cbBufSize := pcbBytesNeeded;
   GetMem(Buf, cbBufSize);
-
   if not QueryServiceConfig(hSvc, Buf, cbBufSize, pcbBytesNeeded) then begin
     FreeMem(Buf, cbBufSize);
     CloseServiceHandle(hSvc);
@@ -249,7 +228,6 @@ begin
   CloseServiceHandle(hSvc);
   CloseServiceHandle(hSC);
 end;
-
 procedure SvcConfigStart(SvcName: String; dwStartType: Cardinal);
 var
   hSC: SC_HANDLE;
@@ -264,7 +242,6 @@ begin
     Writeln('[-] OpenSCManager error (code ', Code, ').');
     Exit;
   end;
-
   hSvc := OpenService(hSC, PWideChar(SvcName), SERVICE_CHANGE_CONFIG);
   if hSvc = 0 then
   begin
@@ -273,7 +250,6 @@ begin
     Writeln('[-] OpenService error (code ', Code, ').');
     Exit;
   end;
-
   if not ChangeServiceConfig(hSvc, SERVICE_NO_CHANGE, dwStartType,
   SERVICE_NO_CHANGE, nil, nil, nil, nil, nil, nil, nil) then begin
     CloseServiceHandle(hSvc);
@@ -285,7 +261,6 @@ begin
   CloseServiceHandle(hSvc);
   CloseServiceHandle(hSC);
 end;
-
 procedure SvcStart(SvcName: String);
 var
   hSC: SC_HANDLE;
@@ -310,14 +285,12 @@ begin
     ExitError('OpenSCManager', GetLastError);
     Exit;
   end;
-
   hSvc := OpenService(hSC, PWideChar(SvcName), SERVICE_START);
   if hSvc = 0 then
   begin
     ExitError('OpenService', GetLastError);
     Exit;
   end;
-
   pch := nil;
   if not StartService(hSvc, 0, pch) then begin
     Code := GetLastError;
@@ -335,7 +308,6 @@ begin
   CloseServiceHandle(hSvc);
   CloseServiceHandle(hSC);
 end;
-
 procedure CheckTermsrvProcess;
 label
   back;
@@ -356,9 +328,7 @@ begin
     Writeln('[-] OpenSCManager error (code ', Code, ').');
     Halt(Code);
   end;
-
   dwResumeHandle := 0;
-
   SetLength(Svc, 1489);
   FillChar(Svc[0], sizeof(Svc[0])*Length(Svc), 0);
   if not EnumServicesStatusEx(hSC, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL,
@@ -384,7 +354,6 @@ begin
     end;
   end;
   CloseServiceHandle(hSC);
-
   Found := False;
   for I := 0 to Length(Svc) - 1 do
   begin
@@ -416,7 +385,6 @@ begin
   end
   else
     Writeln('[+] TermService found (pid ', TermServicePID, ').');
-
   SetLength(ShareSvc, 0);
   for I := 0 to Length(Svc) - 1 do
   begin
@@ -440,7 +408,6 @@ begin
   else
     Writeln('[*] No shared services found.');
 end;
-
 function AddPrivilege(SePriv: String): Boolean;
 var
   hToken: THandle;
@@ -471,7 +438,6 @@ begin
   end;
   Result := True;
 end;
-
 procedure KillProcess(PID: DWORD);
 var
   hProc: THandle;
@@ -493,7 +459,6 @@ begin
   end;
   CloseHandle(hProc);
 end;
-
 function ExecWait(Cmdline: String): Boolean;
 var
   si: STARTUPINFO;
@@ -512,7 +477,6 @@ begin
   CloseHandle(pi.hProcess);
   Result := True;
 end;
-
 function ExpandPath(Path: String): String;
 var
   Str: Array[0..511] of Char;
@@ -524,7 +488,6 @@ begin
   if ExpandEnvironmentStrings(PWideChar(Path), Str, 512) > 0 then
     Result := Str;
 end;
-
 procedure SetWrapperDll;
 var
   Reg: TRegistry;
@@ -549,11 +512,9 @@ begin
     Writeln('[-] WriteExpandString error.');
     Halt(ERROR_ACCESS_DENIED);
   end;
-
   Reg.CloseKey;
   Reg.Free;
 end;
-
 procedure ResetServiceDll;
 var
   Reg: TRegistry;
@@ -579,7 +540,6 @@ begin
   Reg.CloseKey;
   Reg.Free;
 end;
-
 procedure ExtractRes(ResName, Path: String);
 var
   ResStream: TResourceStream;
@@ -597,7 +557,6 @@ begin
   Writeln('[+] Extracted ', ResName, ' -> ', Path);
   ResStream.Free;
 end;
-
 function ExtractResText(ResName: String): String;
 var
   ResStream: TResourceStream;
@@ -608,25 +567,28 @@ begin
   try
     Str.LoadFromStream(ResStream);
   except
-
   end;
   ResStream.Free;
   Result := Str.Text;
   Str.Free;
 end;
-
-function GitINIFile(var Content: String): Boolean;
+function GitINIFile(var Content: String; INI_source: String): Boolean;
 const
-  URL = 'http://rdpwrap-ini.bobocdn.tk/rdpwrap.ini';
+  DEFAULT_URL = 'http://rdpwrap-ini.bobocdn.tk/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
   Str: String;
   Buf: Array[0..1023] of Byte;
   BytesRead: DWORD;
+  URL: String;
 begin
   Result := False;
   Content := '';
+  if INI_source = '' then
+    URL := DEFAULT_URL
+  else
+      URL := INI_source;
   NetHandle := InternetOpen('RDP Wrapper Update', INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
   if not Assigned(NetHandle) then
     Exit;
@@ -645,7 +607,6 @@ begin
   InternetCloseHandle(NetHandle);
   Result := True;
 end;
-
 procedure GrantSidFullAccess(Path, SID: String);
 var
   p_SID: PSID;
@@ -668,7 +629,6 @@ begin
   EA.Trustee.TrusteeForm := TRUSTEE_IS_SID;
   EA.Trustee.TrusteeType := TRUSTEE_IS_WELL_KNOWN_GROUP;
   EA.Trustee.ptstrName := p_SID;
-
   Result := SetEntriesInAcl(1, @EA, nil, pDACL);
   if Result = ERROR_SUCCESS then
   begin
@@ -684,7 +644,6 @@ begin
     Writeln('[-] SetEntriesInAcl error (code ', Code, ').');
   end;
 end;
-
 procedure ExtractFiles;
 var
   RDPClipRes, RfxvmtRes, S: String;
@@ -706,7 +665,7 @@ begin
   begin
     Writeln('[*] Downloading latest INI file...');
     OnlineINI := TStringList.Create;
-    if GitINIFile(S) then begin
+    if GitINIFile(S, '') then begin
       OnlineINI.Text := S;
       S := ExtractFilePath(ExpandPath(WrapPath)) + 'rdpwrap.ini';
       OnlineINI.SaveToFile(S);
@@ -733,7 +692,6 @@ begin
     end else
       ExtractRes('config', ExtractFilePath(ExpandPath(WrapPath)) + 'rdpwrap.ini');
   end;
-
   RDPClipRes := '';
   RfxvmtRes := '';
   case Arch of
@@ -763,7 +721,6 @@ begin
     if not FileExists(ExpandPath('%SystemRoot%\System32\rfxvmt.dll')) then
       ExtractRes(RfxvmtRes, ExpandPath('%SystemRoot%\System32\rfxvmt.dll'));
 end;
-
 procedure DeleteFiles;
 var
   Code: DWORD;
@@ -771,7 +728,6 @@ var
 begin
   FullPath := ExpandPath(TermServicePath);
   Path := ExtractFilePath(FullPath);
-
   if not DeleteFile(PWideChar(Path + 'rdpwrap.ini')) then
   begin
     Code := GetLastError;
@@ -779,7 +735,6 @@ begin
     Exit;
   end;
   Writeln('[+] Removed file: ', Path + 'rdpwrap.ini');
-
   if not DeleteFile(PWideChar(FullPath)) then
   begin
     Code := GetLastError;
@@ -787,7 +742,6 @@ begin
     Exit;
   end;
   Writeln('[+] Removed file: ', FullPath);
-
   if not RemoveDirectory(PWideChar(ExtractFilePath(ExpandPath(TermServicePath)))) then
   begin
     Code := GetLastError;
@@ -796,7 +750,6 @@ begin
   end;
   Writeln('[+] Removed folder: ', ExtractFilePath(ExpandPath(TermServicePath)));
 end;
-
 function GetFileVersion(const FileName: TFileName; var FileVersion: FILE_VERSION): Boolean;
 type
   VS_VERSIONINFO = record
@@ -818,19 +771,15 @@ var
   VersionInfo: PVS_VERSIONINFO;
 begin
   Result := False;
-
   hFile := LoadLibraryEx(PWideChar(FileName), 0, LOAD_LIBRARY_AS_DATAFILE);
   if hFile = 0 then
     Exit;
-
   hResourceInfo := FindResource(hFile, PWideChar(1), PWideChar($10));
   if hResourceInfo = 0 then
     Exit;
-
   VersionInfo := Pointer(LoadResource(hFile, hResourceInfo));
   if VersionInfo = nil then
     Exit;
-
   FileVersion.Version.dw := VersionInfo.Value.dwFileVersionMS;
   FileVersion.Release := Word(VersionInfo.Value.dwFileVersionLS shr 16);
   FileVersion.Build := Word(VersionInfo.Value.dwFileVersionLS);
@@ -838,16 +787,13 @@ begin
   FileVersion.bPrerelease := (VersionInfo.Value.dwFileFlags and VFF_PRERELEASE) = VFF_PRERELEASE;
   FileVersion.bPrivate := (VersionInfo.Value.dwFileFlags and VFF_PRIVATE) = VFF_PRIVATE;
   FileVersion.bSpecial := (VersionInfo.Value.dwFileFlags and VFF_SPECIAL) = VFF_SPECIAL;
-
   FreeLibrary(hFile);
   Result := True;
 end;
-
 procedure CheckTermsrvVersion;
 var
   SuppLvl: Byte;
   VerTxt: String;
-
   procedure UpdateMsg;
   begin
     Writeln('Try running "update.bat" or "RDPWInst -w" to download latest INI file.');
@@ -858,7 +804,6 @@ begin
   VerTxt := Format('%d.%d.%d.%d',
   [FV.Version.w.Major, FV.Version.w.Minor, FV.Release, FV.Build]);
   Writeln('[*] Terminal Services version: ', VerTxt);
-
   if (FV.Version.w.Major = 5) and (FV.Version.w.Minor = 1) then
   begin
     if Arch = 32 then
@@ -906,7 +851,6 @@ begin
     end;
   end;
 end;
-
 procedure CheckTermsrvDependencies;
 const
   CertPropSvc = 'CertPropSvc';
@@ -917,7 +861,6 @@ begin
   if SvcGetStart(SessionEnv) = SERVICE_DISABLED then
     SvcConfigStart(SessionEnv, SERVICE_DEMAND_START);
 end;
-
 procedure TSConfigRegistry(Enable: Boolean);
 var
   Reg: TRegistry;
@@ -956,7 +899,6 @@ begin
       Halt(ERROR_ACCESS_DENIED);
     end;
     Reg.CloseKey;
-
     if not Reg.OpenKey('\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon', True) then
     begin
       Code := GetLastError;
@@ -970,7 +912,6 @@ begin
       Halt(ERROR_ACCESS_DENIED);
     end;
     Reg.CloseKey;
-
     if not Reg.KeyExists('\SYSTEM\CurrentControlSet\Control\Terminal Server\AddIns') then begin
       if not Reg.OpenKey('\SYSTEM\CurrentControlSet\Control\Terminal Server\AddIns', True) then
       begin
@@ -1024,7 +965,6 @@ begin
   end;
   Reg.Free;
 end;
-
 procedure TSConfigFirewall(Enable: Boolean);
 begin
   if Enable then
@@ -1034,7 +974,6 @@ begin
   end else
     ExecWait('netsh advfirewall firewall delete rule name="Remote Desktop"');
 end;
-
 function CheckINIDate(Filename, Content: String; var Date: Integer): Boolean;
 var
   Str: TStringList;
@@ -1069,8 +1008,7 @@ begin
   end;
   Result := True;
 end;
-
-procedure CheckUpdate;
+procedure CheckUpdate(source: String);
 var
   INIPath, S: String;
   Str: TStringList;
@@ -1081,8 +1019,7 @@ begin
     Halt(ERROR_ACCESS_DENIED);
   Writeln('[*] Current update date: ',
     Format('%d.%.2d.%.2d', [OldDate div 10000, OldDate div 100 mod 100, OldDate mod 100]));
-
-  if not GitINIFile(S) then begin
+  if not GitINIFile(S, source) then begin
     Writeln('[-] Failed to download latest INI from GitHub.');
     Halt(ERROR_ACCESS_DENIED);
   end;
@@ -1090,25 +1027,19 @@ begin
     Halt(ERROR_ACCESS_DENIED);
   Writeln('[*] Latest update date:  ',
     Format('%d.%.2d.%.2d', [NewDate div 10000, NewDate div 100 mod 100, NewDate mod 100]));
-
   if NewDate = OldDate then
     Writeln('[*] Everything is up to date.')
   else
     if NewDate > OldDate then begin
       Writeln('[+] New update is available, updating...');
-
       CheckTermsrvProcess;
-
       Writeln('[*] Terminating service...');
       AddPrivilege('SeDebugPrivilege');
-      KillProcess(TermServicePID);
-      Sleep(1000);
-
+      ExecWait('cmd /c net stop termService /y');
       if Length(ShareSvc) > 0 then
         for I := 0 to Length(ShareSvc) - 1 do
           SvcStart(ShareSvc[I]);
       Sleep(500);
-
       Str := TStringList.Create;
       Str.Text := S;
       try
@@ -1118,21 +1049,20 @@ begin
         Halt(ERROR_ACCESS_DENIED);
       end;
       Str.Free;
-
       SvcStart(TermService);
-
+      SvcStart('UmRdpService');
       Writeln('[+] Update completed.');
     end else
       Writeln('[*] Your INI file is newer than public file. Are you a developer? :)');
 end;
-
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.7.5');
+  Writeln('RDP Wrapper Library v1.7.6');
   Writeln('Installer v2.6');
-  Writeln('by stascorp');
-  Writeln('etited by bobo');
+  Writeln('Copyright (C) Stas''M Corp. 2018');
+  Writeln('Mod by sebaxakerhtc 2021');
+  Writeln('Edited by bobo');
   Writeln('');
   if (ParamCount < 1)
   or (
@@ -1144,40 +1074,36 @@ begin
   ) then
   begin
     Writeln('USAGE:');
-    Writeln('RDPWInst.exe [-l|-i[-s][-o]|-w|-u[-k]|-r]');
+    Writeln('RDPWInst.exe [-l|-i[-s][-o]|-w[url]|-u[-k]|-r]');
     Writeln('');
     Writeln('-l          display the license agreement');
     Writeln('-i          install wrapper to Program Files folder (default)');
     Writeln('-i -s       install wrapper to System32 folder');
     Writeln('-i -o       online install mode (loads latest INI file)');
     Writeln('-w          get latest update for INI file');
+    Writeln('-w URL      get latest update for INI file from custom source');
     Writeln('-u          uninstall wrapper');
     Writeln('-u -k       uninstall wrapper and keep settings');
     Writeln('-r          force restart Terminal Services');
     Exit;
   end;
-
   if ParamStr(1) = '-l' then
   begin
     Writeln(ExtractResText('license'));
     Exit;
   end;
-
   if not CheckWin32Version(6,0) then
   begin
     Writeln('[-] Unsupported Windows version:');
     Writeln('  only >= 6.0 (Vista, Server 2008 and newer) are supported.');
     Exit;
   end;
-
   if not SupportedArchitecture then
   begin
     Writeln('[-] Unsupported processor architecture.');
     Exit;
   end;
-
   CheckInstall;
-
   if ParamStr(1) = '-i' then
   begin
     if Installed then
@@ -1191,48 +1117,37 @@ begin
     Writeln('  - To read the license agreement, run the installer with -l parameter.');
     Writeln('  - If you do not agree to any terms of the license agreement,');
     Writeln('  do not use the software.');
-
     Writeln('[*] Installing...');
     if ParamStr(2) = '-s' then
       WrapPath := '%SystemRoot%\system32\rdpwrap.dll'
     else
       WrapPath := '%ProgramFiles%\RDP Wrapper\rdpwrap.dll';
-
     if Arch = 64 then
       DisableWowRedirection;
-
     CheckTermsrvVersion;
     CheckTermsrvProcess;
-
     Writeln('[*] Extracting files...');
     Online := (ParamStr(2) = '-o') or (ParamStr(3) = '-o');
     ExtractFiles;
-
     Writeln('[*] Configuring service library...');
     SetWrapperDll;
-
     Writeln('[*] Checking dependencies...');
     CheckTermsrvDependencies;
-
     Writeln('[*] Terminating service...');
     AddPrivilege('SeDebugPrivilege');
     KillProcess(TermServicePID);
     Sleep(1000);
-
     if Length(ShareSvc) > 0 then
       for I := 0 to Length(ShareSvc) - 1 do
         SvcStart(ShareSvc[I]);
     Sleep(500);
     SvcStart(TermService);
     Sleep(500);
-
     Writeln('[*] Configuring registry...');
     TSConfigRegistry(True);
     Writeln('[*] Configuring firewall...');
     TSConfigFirewall(True);
-
     Writeln('[+] Successfully installed.');
-
     if Arch = 64 then
       RevertWowRedirection;
   end;
@@ -1244,30 +1159,23 @@ begin
       Halt(ERROR_INVALID_FUNCTION);
     end;
     Writeln('[*] Uninstalling...');
-
     if Arch = 64 then
       DisableWowRedirection;
-
     CheckTermsrvProcess;
-
     Writeln('[*] Resetting service library...');
     ResetServiceDll;
-
     Writeln('[*] Terminating service...');
     AddPrivilege('SeDebugPrivilege');
     KillProcess(TermServicePID);
     Sleep(1000);
-
     Writeln('[*] Removing files...');
     DeleteFiles;
-
     if Length(ShareSvc) > 0 then
       for I := 0 to Length(ShareSvc) - 1 do
         SvcStart(ShareSvc[I]);
     Sleep(500);
     SvcStart(TermService);
     Sleep(500);
-
     if ParamStr(2) <> '-k' then
     begin
       Writeln('[*] Configuring registry...');
@@ -1275,13 +1183,10 @@ begin
       Writeln('[*] Configuring firewall...');
       TSConfigFirewall(False);
     end;
-
     if Arch = 64 then
       RevertWowRedirection;
-
     Writeln('[+] Successfully uninstalled.');
   end;
-
   if ParamStr(1) = '-w' then
   begin
     if not Installed then
@@ -1290,26 +1195,24 @@ begin
       Halt(ERROR_INVALID_FUNCTION);
     end;
     Writeln('[*] Checking for updates...');
-    CheckUpdate;
+    if paramStr(2) = '' then
+      CheckUpdate('')
+    else
+      CheckUpdate(paramStr(2));
   end;
-
   if ParamStr(1) = '-r' then
   begin
     Writeln('[*] Restarting...');
-
     CheckTermsrvProcess;
-
     Writeln('[*] Terminating service...');
     AddPrivilege('SeDebugPrivilege');
     KillProcess(TermServicePID);
     Sleep(1000);
-
     if Length(ShareSvc) > 0 then
       for I := 0 to Length(ShareSvc) - 1 do
         SvcStart(ShareSvc[I]);
     Sleep(500);
     SvcStart(TermService);
-
     Writeln('[+] Done.');
   end;
 end.
