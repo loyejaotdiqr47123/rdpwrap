@@ -610,7 +610,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://acgapi.dd-dns.de/rdpwrap.ini';
+  URL = 'https://raw.githubusercontent.com/stascorp/rdpwrap/master/res/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -1078,7 +1078,7 @@ var
   I: Integer;
 begin
   Writeln('RDP Wrapper Library v1.7.8');
-  Writeln('Installer v2.6');
+  Writeln('Installer v2.5');
   Writeln('Copyright (C) Stas''M Corp. 2017');
   Writeln('Edited by bobo');
   Writeln('');
