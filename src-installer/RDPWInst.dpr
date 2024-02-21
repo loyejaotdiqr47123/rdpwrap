@@ -1,6 +1,6 @@
 {
   Copyright 2017 Stas'M Corp.
-
+  Edited by bobo
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -1077,7 +1077,7 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.7.8');
+  Writeln('RDP Wrapper Library v1.7.9');
   Writeln('Installer v2.6');
   Writeln('Copyright (C) Stas''M Corp. 2017');
   Writeln('Edited by bobo');
