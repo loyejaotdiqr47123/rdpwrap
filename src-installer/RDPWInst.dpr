@@ -610,7 +610,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://acgapi.dd-dns.de/rdpwrap.ini';
+  URL = 'https://acgapi.rpyf.top/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
