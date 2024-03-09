@@ -19,10 +19,10 @@
 1.从 [https://github.com/loyejaotdiqr47123/rdpwrap/releases](https://github.com/loyejaotdiqr47123/rdpwrap/releases) 下载最新版rdpwrap
 
 2.解压后运行install.bat
-![image](https://down.bobocdn.tk/?explorer/share/file&hash=54f0kRzmv2R3t7zShZ2CwB0FpoySEIzvVtOOOP4ML6Aqi-7OYsyUjt3GjdcBc8AWHQ)
+![image](https://img2.imgtp.com/2024/03/09/c0QN6eKl.png)
 
-3.随后打开rdpconf.exe看一下是否全部绿色
-![image](https://down.bobocdn.tk/?explorer/share/file&hash=b70d22wIklA6eI7XhC_Xu9U9z2RRbyYVT3T1JeRuaJ9Fymx9X8yWj8fFCLd5kWf9LQ&name=/qq_pic_merged_1673522040483.jpg)
+3.然后打开RDPConf.exe看一下是否全部绿色
+![image](hhttps://img2.imgtp.com/2024/03/09/XvYspUTI.png)
 
 
 
