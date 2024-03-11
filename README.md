@@ -15,7 +15,7 @@
 
 中国用户建议前往gitcode镜像站
 
-[https://gitcode.com/weixin_53304770/rdpwrap/releases](https://gitcode.com/weixin_53304770/rdpwrap/releases/)
+[https://gitcode.com/weixin_53304770/rdpwrap](https://gitcode.com/weixin_53304770/rdpwrap)
 -------------------------------------------------------------------------------------------------------------
 使用方法:
 
