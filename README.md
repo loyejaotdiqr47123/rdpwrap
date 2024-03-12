@@ -24,7 +24,7 @@
 ![image](https://img2.imgtp.com/2024/03/09/c0QN6eKl.png)
 
 3.然后打开RDPConf.exe看一下是否全部绿色
-![image](hhttps://img2.imgtp.com/2024/03/09/XvYspUTI.png)
+![image](https://img2.imgtp.com/2024/03/09/XvYspUTI.png)
 
 
 
