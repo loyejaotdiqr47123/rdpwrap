@@ -1,6 +1,7 @@
 # RDP Wrapper Library by Stas'M edited by bobo
 
      本项目可支持对win11远程桌面多用户的破解
+     rdpwrap already supports 24h2
      
  -------------------------------------------------------------------------------------------------------------
  如果出现not support，请提issues
