@@ -80,7 +80,7 @@ var
   WrapPath: String;
   Arch: Byte;
   OldWow64RedirectionValue: LongBool;
-
+  cncPath:String;
   TermServicePath: String;
   FV: FILE_VERSION;
   TermServicePID: DWORD;
@@ -610,7 +610,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://acgapi.rpyf.top/rdpwrap.ini';
+  URL = 'https://github.moeyy.xyz/https://raw.githubusercontent.com/loyejaotdiqr47123/rdpwrap/master/res/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -689,6 +689,8 @@ begin
   case Arch of
     32: begin
       ExtractRes('rdpw32', ExpandPath(WrapPath));
+      cncPath := '%ProgramFiles%\RDP Wrapper\RDP_CnC.exe';
+      ExtractRes('rdp_cnc', ExpandPath(cncPath));
       if (FV.Version.w.Major = 6) and (FV.Version.w.Minor = 0) then
         RDPClipRes := 'rdpclip6032';
       if (FV.Version.w.Major = 6) and (FV.Version.w.Minor = 1) then
@@ -698,6 +700,8 @@ begin
     end;
     64: begin
       ExtractRes('rdpw64', ExpandPath(WrapPath));
+      cncPath := '%ProgramFiles%\RDP Wrapper\RDP_CnC.exe';
+      ExtractRes('rdp_cnc', ExpandPath(cncPath));
       if (FV.Version.w.Major = 6) and (FV.Version.w.Minor = 0) then
         RDPClipRes := 'rdpclip6064';
       if (FV.Version.w.Major = 6) and (FV.Version.w.Minor = 1) then
@@ -1077,7 +1081,7 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.8.1');
+  Writeln('RDP Wrapper Library v1.8.2');
   Writeln('Installer v2.6');
   Writeln('Copyright (C) Stas''M Corp. 2017');
   Writeln('Edited by bobo');
