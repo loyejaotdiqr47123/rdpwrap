@@ -1,6 +1,8 @@
 @echo off
 if not exist "%~dp0RDPWInst.exe" goto :error
 "%~dp0RDPWInst" -u
+SCHTASKS /DELETE /TN "RDPWUpdater" /F
+rmdir /Q /S "C:\Program Files\RDP Wrapper"
 echo.
 goto :anykey
 :error
