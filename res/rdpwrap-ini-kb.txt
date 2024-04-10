@@ -1,6 +1,6 @@
 [Main]
 ; Last updated date
-Updated=2024-04-08
+Updated=2024-04-10
 ; Address to log file (RDP Wrapper will write it, if exists)
 LogFile=\rdpwrap.txt
 ; Hook SLPolicy API on Windows NT 6.0
@@ -4378,6 +4378,62 @@ SLInitHook.x64=1
 SLInitOffset.x64=29E80
 SLInitFunc.x64=New_CSLQuery_Initialize
 
+[10.0.22621.3447]
+; HOW TO search CUtils::IsSingleSessionPerUser(int *) function in IDA Pro:
+; 1. Search text: CUtils::IsSingleSessionPerUser(int *)
+; 2. All xrefs will point to this function (in x64 version xref points to subroutine, so you need to go one level up)
+; 3. Go to first graph block and find memset, lea, mov, and so on
+
+; Patch CUtils::IsSingleSessionPerUser(int *)
+.text:000000018000C3E9                 call    memset_0
+.text:000000018000C3EE                 lea     eax, [rdi+10h]
+.text:000000018000C3F1                 mov     dword ptr [rsi], 1 <- 0
+SingleUserPatch.x64=1
+SingleUserOffset.x64=C3F3
+SingleUserCode.x64=Zero
+
+; HOW TO search CDefPolicy::Query function in IDA Pro:
+; 1. Search text: CDefPolicy::Query
+; 2. All xrefs will point to this function (in x64 version xref sometimes points to subroutine, so you need to go one level up)
+; 3. Go to first graph block and find cmp/jz instructions on the bottom of block
+
+; Patch CDefPolicy::Query
+; Original
+.text:000000018001C2E5                 cmp     [rcx+63Ch], eax
+.text:000000018001C2EB                 jz      loc_180035366
+; Changed
+.text:000000018001C2E5                 mov     eax, 100h
+.text:000000018001C2EA                 mov     [rcx+638h], eax
+.text:000000018001C2F0                 nop
+DefPolicyPatch.x64=1
+DefPolicyOffset.x64=1C2E5
+DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
+
+; HOW TO search CEnforcementCore::GetInstanceOfTSLicense function in IDA Pro:
+; 1. Search text: CSLQuery::IsLicenseTypeLocalOnly
+; 2. All xrefs will point to this function
+; 3. Go to function beginning and check ; CODE XREF string, it will point to GetInstanceOfTSLicense function
+; 4. Follow CODE XREF, switch to graph view, the next block below is to patch
+; Another way:
+; 1. Search text: CEnforcementCore::GetInstanceOfTSLicense FAILED - License type me
+; 2. All xrefs will point to GetInstanceOfTSLicense
+; 3. Follow xref, the previous block above is to patch
+
+; Patch CEnforcementCore::GetInstanceOfTSLicense
+.text:000000018009D604                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
+.text:000000018009D609                 test    eax, eax
+.text:000000018009D60B                 js      short loc_18009D657
+.text:000000018009D60D                 cmp     [rbp+arg_18], 0
+.text:000000018009D611                 jz      short loc_18009D657  <- jmp
+LocalOnlyPatch.x64=1
+LocalOnlyOffset.x64=9D611
+LocalOnlyCode.x64=jmpshort
+
+; Hook CSLQuery::Initialize
+SLInitHook.x64=1
+SLInitOffset.x64=29ED0
+SLInitFunc.x64=New_CSLQuery_Initialize
+
 [10.0.26100.1]
 ; HOW TO search CUtils::IsSingleSessionPerUser(int *) function in IDA Pro:
 ; 1. Search text: CUtils::IsSingleSessionPerUser(int *)
@@ -6415,14 +6471,36 @@ bFUSEnabled.x64       =ECAD0
 ; ulMaxDebugSessions
 ; bInitialized
 
-bServerSku.x64         =12BF50
-bRemoteConnAllowed.x64 =12BF64
-bFUSEnabled.x64        =12BF74
-bAppServerAllowed.x64  =12BF5C
-bMultimonAllowed.x64   =12BF68
-lMaxUserSessions.x64   =12BF54
-ulMaxDebugSessions.x64 =12BF70
-bInitialized.x64       =12BF4C
+bServerSku.x64        =12BF50
+bRemoteConnAllowed.x64=12BF64
+bFUSEnabled.x64       =12BF74
+bAppServerAllowed.x64 =12BF5C
+bMultimonAllowed.x64  =12BF68
+lMaxUserSessions.x64  =12BF54
+ulMaxDebugSessions.x64=12BF70
+bInitialized.x64      =12BF4C
+
+[10.0.22621.3447-SLInit]
+; HOW TO search SLInit global variables in IDA Pro:
+; 1. Shift+F4 opens the Names Window
+; 2. Find the following strings
+; bServerSku
+; bRemoteConnAllowed
+; bFUSEnabled
+; bAppServerAllowed
+; bMultimonAllowed
+; lMaxUserSessions
+; ulMaxDebugSessions
+; bInitialized
+
+bServerSku.x64        =12BF50
+bRemoteConnAllowed.x64=12BF64
+bFUSEnabled.x64       =12BF74
+bAppServerAllowed.x64 =12BF5C
+bMultimonAllowed.x64  =12BF68
+lMaxUserSessions.x64  =12BF54
+ulMaxDebugSessions.x64=12BF70
+bInitialized.x64      =12BF4C
 
 [10.0.26100.1-SLInit]
 ; HOW TO search SLInit global variables in IDA Pro:
@@ -6437,11 +6515,11 @@ bInitialized.x64       =12BF4C
 ; ulMaxDebugSessions
 ; bInitialized
 
-bServerSku.x64         =11ADF4
-bRemoteConnAllowed.x64 =11AE08
-bFUSEnabled.x64        =11AE18
-bAppServerAllowed.x64  =11AE00
-bMultimonAllowed.x64   =11AE0C
-lMaxUserSessions.x64   =11ADF8
-ulMaxDebugSessions.x64 =11AE14
-bInitialized.x64       =11ADF0
+bServerSku.x64        =11ADF4
+bRemoteConnAllowed.x64=11AE08
+bFUSEnabled.x64       =11AE18
+bAppServerAllowed.x64 =11AE00
+bMultimonAllowed.x64  =11AE0C
+lMaxUserSessions.x64  =11ADF8
+ulMaxDebugSessions.x64=11AE14
+bInitialized.x64      =11ADF0
