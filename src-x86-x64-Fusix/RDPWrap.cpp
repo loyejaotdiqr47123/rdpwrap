@@ -1,11 +1,6 @@
 /*
-  Copyright 2021 anhkgg.
-
-  1. fix some bugs.
-  2. make code clean.
-  3. add Hook and PatchFunction.
-
   Copyright 2014 Stas'M Corp.
+  Edited by bobo
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -55,14 +50,12 @@ bool OverrideSL(LPWSTR ValueName, DWORD *Value)
 
 HRESULT WINAPI New_SLGetWindowsInformationDWORD(PWSTR pwszValueName, DWORD *pdwValue)
 {
-	// wrapped SLGetWindowsInformationDWORD function
-	// termsrv.dll will call this function instead of original SLC.dll
+    // wrapped unexported function SLGetWindowsInformationDWORDWrapper in termsrv.dll
 
-	// Override SL Policy
+    // Override SL Policy
 
-	/*extern FARJMP Old_SLGetWindowsInformationDWORD, Stub_SLGetWindowsInformationDWORD;
-	extern SLGETWINDOWSINFORMATIONDWORD _SLGetWindowsInformationDWORD;*/
-
+    //extern SLGETWINDOWSINFORMATIONDWORD _SLGetWindowsInformationDWORD;
+    
 	DWORD dw;
 	SIZE_T bw;
 	HRESULT Result;
@@ -260,9 +253,20 @@ bool LoadConfig()
         }
     }*/
     PathRemoveExtensionW(ConfigFile);
-    wcscat_s(ConfigFile, L".ini");
-    // PathRemoveFileSpecW(ConfigFile);
-    // PathAppendW(ConfigFile, "rdpwrap.ini");
+    PathAppendW(ConfigFile, L"rdpwrap.ini");
+
+    WriteToLog("Config file: %s\r\n", ConfigFile);
+
+    IniFile = new INIFile(ConfigFile);
+
+    if (!IniFile->IsOpen())
+    {
+        WriteToLog("Error: Failed to load configuration file\r\n");
+        return false;
+    }
+
+    //=================================================================
+    WriteToLog("Loading configuration...\r\n");
 
     WriteToLog("Configuration file: %S\r\n", ConfigFile);
 
@@ -283,15 +287,16 @@ bool LoadConfig()
     if (!(IniFile->GetVariableInSection("Main", "LogFile", &LogFileVar)))
     {
         GetModuleFileName(GetCurrentModule(), LogFile, 255);
-        for (DWORD i = wcslen(LogFile); i > 0; i--)
+        for(DWORD i =wcslen(LogFile); i > 0; i--)
         {
-            if (LogFile[i] == '\\')
+            if (LogFile[i] == '.')
             {
                 memset(&LogFile[i + 1], 0x00, ((256 - (i + 1))) * 2);
-                memcpy(&LogFile[i + 1], L"rdpwrap.txt", strlen("rdpwrap.txt") * 2);
+                memcpy(&LogFile[i + 1], L"rdpwrap.log", strlen("rdpwrap.log") * 2);
                 break;
             }
         }
+        PathRemoveExtensionW(LogFile);
     }
     else
     {
@@ -360,7 +365,7 @@ bool CheckTermSrvVersion(WORD *Ver)
 
 bool PatchSLPolicy(WORD VersionNumber)
 {
-    bool Bool; //Ä¬ÈÏÎªÕæ
+    bool Bool; 
     SIZE_T bw;
 
     if (!(IniFile->GetVariableInSection("Main", "SLPolicyHookNT60", &Bool))) Bool = true;
@@ -587,8 +592,8 @@ void PatchSLInit(char* Sect)
         FuncName = new char[1024];
 #ifdef _WIN64
         SignPtr = (PLATFORM_DWORD)(TermSrvBase + INIReadDWordHex(IniFile, Sect, "SLInitOffset.x64", 0));
-        //±àÒëºó£¬³öÏÖÖ¸Áî´íÎó
-        //ÒòÎªFARJMP½á¹¹Ìå¶ÔÆë
+        //ï¿½ï¿½ï¿½ï¿½ó£¬³ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½
+        //ï¿½ï¿½ÎªFARJMPï¿½á¹¹ï¿½ï¿½ï¿½ï¿½ï¿½
         /* error
         00007ffd`880e2ddc 48b8cccccccccccc833d mov rax,3D83CCCCCCCCCCCCh
         00007ffd`880e2de6 258afd7f00      and     eax,7FFD8Ah
