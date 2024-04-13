@@ -1,5 +1,6 @@
 /*
 Copyright 2014 Stas'M Corp.
+Edited by bobo
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -64,11 +65,16 @@ INI_FILE::~INI_FILE()
 bool INI_FILE::CreateStringsMap()
 {
 	DWORD StringsCount = 1;
-
-	for (DWORD i = 0; i < FileSize; i++)
+	for(DWORD i=0; i<FileSize; i++)
 	{
-		//if (FileRaw[i] == '\r' && FileRaw[i + 1] == '\n') StringsCount++;
-		if (FileRaw[i] == '\n') StringsCount++;
+		if (FileRaw[i] == '\r' || FileRaw[i] == '\n')
+		{
+			StringsCount++;
+		}
+		if (i == (FileSize - 1))
+		{
+			StringsCount++;
+		}
 	}
 
 	FileStringsCount = StringsCount;
@@ -80,8 +86,7 @@ bool INI_FILE::CreateStringsMap()
 
 	for (DWORD i = 0; i < FileSize; i++)
 	{
-		//if (FileRaw[i] == '\r' && FileRaw[i + 1] == '\n')
-		if ( FileRaw[i] == '\n')
+		if (FileRaw[i] == '\r' || FileRaw[i] == '\n')
 		{
 			FileStringsMap[StringsCount] = i + 1;
 			StringsCount++;
@@ -129,8 +134,12 @@ DWORD INI_FILE::GetFileStringFromNum(DWORD StringNumber, char *RetString, DWORD 
 
 	for (DWORD i = FileStringsMap[StringNumber]; i < FileSize; i++)
 	{
-		//if ((FileRaw[i] == '\r' && FileRaw[i + 1] == '\n') || i == (FileSize - 1))
-		if (FileRaw[i] == '\r' || FileRaw[i] == '\n' || i == (FileSize - 1))
+		if(FileRaw[i] == '\r') || (FileRaw[i] == '\n')
+		{
+			EndStringPos = i;
+			break;
+		}
+		if (i == (FileSize - 1))
 		{
 			EndStringPos = i;
 			break;
