@@ -93,6 +93,7 @@ bool INI_FILE::CreateStringsMap()
 		}
 	}
 
+    FileStringsMap[StringsCount] = FileSize;
 	return true;
 }
 
