@@ -2,8 +2,7 @@
 #include "IniFile.h"
 #include <stdlib.h>
 
-wchar_t LogFile[256] = L"c:\\rdpwrap.txt\0";
-
+wchar_t LogFile[256]= L"%ProgramFiles%/RDP Wrapper/rdpwrap.log";
 
 
 #ifdef LOG
