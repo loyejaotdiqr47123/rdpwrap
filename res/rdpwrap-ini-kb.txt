@@ -4349,9 +4349,9 @@ SingleUserCode.x64=Zero
 .text:000000018001CA05                 mov     eax, 100h
 .text:000000018001CA0A                 mov     [rcx+638h], eax
 .text:000000018001CA10                 nop
-SingleUserPatch.x64=1
-SingleUserOffset.x64=166AF
-SingleUserCode.x64=Zero
+DefPolicyPatch.x64=1
+DefPolicyOffset.x64=1CA05
+DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
 
 ; HOW TO search CEnforcementCore::GetInstanceOfTSLicense function in IDA Pro:
 ; 1. Search text: CSLQuery::IsLicenseTypeLocalOnly
