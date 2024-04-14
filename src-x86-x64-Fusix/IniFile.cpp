@@ -127,12 +127,7 @@ DWORD INI_FILE::GetFileStringFromNum(DWORD StringNumber, char *RetString, DWORD 
 
 	for (DWORD i = FileStringsMap[StringNumber]; i < FileSize; i++)
 	{
-		if (i == (FileSize - 1))
-		{
-			EndStringPos = FileSize;
-			break;
-		}
-		if (FileRaw[i] == '\r' && FileRaw[i + 1] == '\n')
+		if ((FileRaw[i] == '\r' && FileRaw[i + 1] == '\n') || i == (FileSize - 1))
 		{
 			EndStringPos = i;
 			break;
