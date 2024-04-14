@@ -1081,7 +1081,7 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.8.2');
+  Writeln('RDP Wrapper Library v1.8.3');
   Writeln('Installer v2.6');
   Writeln('Copyright (C) Stas''M Corp. 2017');
   Writeln('Edited by bobo');
