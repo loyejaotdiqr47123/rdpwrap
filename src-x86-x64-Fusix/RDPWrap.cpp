@@ -343,23 +343,24 @@ bool LoadSystemTermSrv()
 bool CheckTermSrvVersion(WORD *Ver)
 {
     // check termsrv version
-    if (GetModuleVersion(L"termsrv.dll", &_FileVersion))
-    {
-        *Ver = (BYTE)_FileVersion.wVersion.Minor | ((BYTE)_FileVersion.wVersion.Major << 8);
-    }
-    else {
-        // check NT version
-        // Ver = GetVersion(); // deprecated
-        // Ver = ((Ver & 0xFF) << 8) | ((Ver & 0xFF00) >> 8);
-    }
-    if (*Ver == 0)
-    {
-        WriteToLog("Error: Failed to detect Terminal Services version\r\n");
-        return false;
-    }
+    	if (GetModuleVersion(L"termsrv.dll", &FV))
+	{
+		Ver = (BYTE)FV.wVersion.Minor | ((BYTE)FV.wVersion.Major << 8);
+	} else {
+		// check NT version
+		// Ver = GetVersion(); // deprecated
+		// Ver = ((Ver & 0xFF) << 8) | ((Ver & 0xFF00) >> 8);
+	}
+	if (Ver == 0)
+	{
+		WriteToLog("Error: Failed to detect Terminal Services version\r\n");
+		return;
+	}
 
-    WriteToLog("Version:    %d.%d.%d.%d\r\n", _FileVersion.wVersion.Major, _FileVersion.wVersion.Minor, _FileVersion.Release, _FileVersion.Build);
-
+	Log = new char[1024];
+	wsprintfA(Log, "Version:    %d.%d.%d.%d\r\n", FV.wVersion.Major, FV.wVersion.Minor, FV.Release, FV.Build);
+	WriteToLog(Log);
+	delete[] Log
     return true;
 }
 
