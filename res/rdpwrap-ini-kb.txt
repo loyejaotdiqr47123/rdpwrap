@@ -4304,9 +4304,9 @@ LocalOnlyCode.x64=jmpshort
 SingleUserPatch.x86=1
 SingleUserOffset.x86=4D505
 SingleUserCode.x86=nop
-SingleUserPatch.x64=1
-SingleUserOffset.x64=1322C
-SingleUserCode.x64=Zero
+; SingleUserPatch.x64=1
+; SingleUserOffset.x64=1322C
+; SingleUserCode.x64=Zero
 ; Patch CDefPolicy::Query
 DefPolicyPatch.x86=1
 DefPolicyOffset.x86=4BD09
