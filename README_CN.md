@@ -1,7 +1,7 @@
 # RDP Wrapper Library by Stas'M edited by bobo
 
 
-[中文](https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README_CN.md)
+[中文](https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README_CN.md) <br>
 [English](https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README.md)
 
 -------------------------------------------------------------------------------------------------------------
