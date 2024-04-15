@@ -1,38 +1,40 @@
 # RDP Wrapper Library by Stas'M edited by bobo
 
+
 (中文)[https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README_CN.md]
 (English)[https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README.md]
+
 -------------------------------------------------------------------------------------------------------------
 
-(I am in the seventh grade, the update speed is slow, such as mentioning issues please be patient)
+（本人七年级，更新速度较慢，如提issues请耐心等待）
 
-This project supports the Win11 Remote Desktop Multi-User Hack!
+本项目可支持对win11远程桌面多用户的破解
 
-rdpwrap already supports 24h2
+rdpwrap已经支持了24h2
      
  -------------------------------------------------------------------------------------------------------------
- If you see not support, please mention issues.
+ 如果出现not support，请提issues
 --------------------------------------------------------------------------------------------------------------
 
-# Announcement
+# 公告
 
 
 
 --------------------------------------------------------------------------------------------------------------
 
-Chinese users are advised to go to the gitcode mirror.
+中国用户建议前往gitcode镜像站
 
 [https://gitcode.com/weixin_53304770/rdpwrap](https://gitcode.com/weixin_53304770/rdpwrap)
 -------------------------------------------------------------------------------------------------------------
-How to use: 1.
+使用方法:
 
-1.Download the latest version of rdpwrap from [https://github.com/loyejaotdiqr47123/rdpwrap/releases](https://github.com/loyejaotdiqr47123/rdpwrap/releases).
+1.从 [https://github.com/loyejaotdiqr47123/rdpwrap/releases](https://github.com/loyejaotdiqr47123/rdpwrap/releases) 下载最新版rdpwrap
 
-2. Unzip it and run install.bat
-! [image](https://img2.imgtp.com/2024/03/09/c0QN6eKl.png)
+2.解压后运行install.bat
+![image](https://img2.imgtp.com/2024/03/09/c0QN6eKl.png)
 
-3.Then open RDPConf.exe to see if it is all green!
-! [image](https://img2.imgtp.com/2024/03/09/XvYspUTI.png)
+3.然后打开RDPConf.exe看一下是否全部绿色
+![image](https://img2.imgtp.com/2024/03/09/XvYspUTI.png)
 
 
 
