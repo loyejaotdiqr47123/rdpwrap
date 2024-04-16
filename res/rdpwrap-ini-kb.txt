@@ -4300,13 +4300,18 @@ LocalOnlyCode.x86=jmpshort
 LocalOnlyPatch.x64=1
 LocalOnlyOffset.x64=77941
 LocalOnlyCode.x64=jmpshort
-; Patch CSessionArbitrationHelperMgr::IsSingleSessionPerUserEnabled
+; Patch CUtils::IsSingleSessionPerUser(int *)
 SingleUserPatch.x86=1
 SingleUserOffset.x86=4D505
 SingleUserCode.x86=nop
-; SingleUserPatch.x64=1
-; SingleUserOffset.x64=1322C
-; SingleUserCode.x64=Zero
+
+;.text:000000018000C5B3                 call    memset_0
+;.text:000000018000C5B8                 lea     eax, [rdi+10h]
+;.text:000000018000C5BB                 mov     [rsp+1A0h+var_140], 11Ch
+;.text:000000018000C5C3                 lea     esi, [rdi+1]  <- 0
+SingleUserPatch.x64=1
+SingleUserOffset.x64=C5C5
+SingleUserCode.x64=Zero
 ; Patch CDefPolicy::Query
 DefPolicyPatch.x86=1
 DefPolicyOffset.x86=4BD09
