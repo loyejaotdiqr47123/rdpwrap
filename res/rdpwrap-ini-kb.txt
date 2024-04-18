@@ -1,6 +1,6 @@
 [Main]
 ; Last updated date
-Updated=2024-04-14
+Updated=2024-04-18
 ; Address to log file (RDP Wrapper will write it, if exists)
 LogFile=\rdpwrap.txt
 ; Hook SLPolicy API on Windows NT 6.0
@@ -4346,7 +4346,7 @@ SingleUserCode.x64=Zero
 ; 2. All xrefs will point to this function (in x64 version xref sometimes points to subroutine, so you need to go one level up)
 ; 3. Go to first graph block and find cmp/jz instructions on the bottom of block
 
-; Patch 
+; Patch CDefPolicy::Query
 ; Original
 .text:000000018001CA05                 cmp     [rcx+63Ch], eax
 .text:000000018001CA0B                 jz      loc_180032448
@@ -4550,6 +4550,66 @@ LocalOnlyCode.x64=jmpshort
 ; Hook CSLQuery::Initialize
 SLInitHook.x64=1
 SLInitOffset.x64=29ED0
+SLInitFunc.x64=New_CSLQuery_Initialize
+
+[10.0.22621.3520]
+; HOW TO search CUtils::IsSingleSessionPerUser(int *) function in IDA Pro:
+; 1. Search text: CUtils::IsSingleSessionPerUser(int *)
+; 2. All xrefs will point to this function (in x64 version xref points to subroutine, so you need to go one level up)
+; 3. Go to first graph block and find memset, lea, mov, and so on
+
+; Patch CUtils::IsSingleSessionPerUser(int *)
+; .text:000000018000C4C9                 call    memset
+; .text:000000018000C4CE                 lea     eax, [rdi+10h]
+; .text:000000018000C4D1                 mov     dword ptr [rsi], 1 <- 0
+SingleUserPatch.x64=1
+SingleUserOffset.x64=C4D3
+SingleUserCode.x64=Zero
+
+; HOW TO search CDefPolicy::Query function in IDA Pro:
+; 1. Search text: CDefPolicy::Query
+; 2. All xrefs will point to this function (in x64 version xref sometimes points to subroutine, so you need to go one level up)
+; 3. Go to first graph block and find cmp/jz instructions on the bottom of block
+
+; Patch CDefPolicy::Query
+; Original
+;.text:000000018001C3C5                 cmp     [rcx+63Ch], eax
+; .text:000000018001C3CB                 jz      loc_180035432
+; Changed
+; .text:000000018001C3C5                 mov     eax, 100h
+; .text:000000018001C3CA                 mov     [rcx+638h], eax
+; .text:000000018001C3D0                 nop
+DefPolicyPatch.x64=1
+DefPolicyOffset.x64=1C3C5
+DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
+
+; HOW TO search CEnforcementCore::GetInstanceOfTSLicense function in IDA Pro:
+; 1. Search text: CSLQuery::IsLicenseTypeLocalOnly
+; 2. All xrefs will point to this function
+; 3. Go to function beginning and check ; CODE XREF string, it will point to GetInstanceOfTSLicense function
+; 4. Follow CODE XREF, switch to graph view, the next block below is to patch
+; Another way:
+; 1. Search text: CEnforcementCore::GetInstanceOfTSLicense FAILED - License type me
+; 2. All xrefs will point to GetInstanceOfTSLicense
+; 3. Follow xref, the previous block above is to patch
+
+; Patch CEnforcementCore::GetInstanceOfTSLicense
+; .text:000000018009D734                 call    sub_1800BBA74
+; .text:000000018009D739                 test    eax, eax
+; .text:000000018009D73B                 js      short loc_18009D787
+; .text:000000018009D73D                 cmp     [rbp+arg_18], 0
+; .text:000000018009D741                 jz      short loc_18009D787 <- jmp
+; .text:000000018009D743                 cmp     cs:dword_18012B030, 2
+; .text:000000018009D74A                 mov     ebx, 80070005h
+; .text:000000018009D74F                 jbe     loc_18009D829
+; .text:000000018009D755                 lea     rax, aCenforcementco_10 ; "CEnforcementCore::GetInstanceOfTSLicens"...
+LocalOnlyPatch.x64=1
+LocalOnlyOffset.x64=9D741
+LocalOnlyCode.x64=jmpshort
+
+; Hook CSLQuery::Initialize
+SLInitHook.x64=1
+SLInitOffset.x64=29FB0
 SLInitFunc.x64=New_CSLQuery_Initialize
 
 [10.0.26100.1]
@@ -6663,6 +6723,36 @@ bMultimonAllowed.x64  =12BF68
 lMaxUserSessions.x64  =12BF54
 ulMaxDebugSessions.x64=12BF70
 bInitialized.x64      =12BF4C
+
+[10.0.22621.3520-SLInit]
+; .data:000000018012BF4C dword_18012BF4C dd 0                    ; DATA XREF: sub_18000BD44+14↑r
+; .data:000000018012BF4C                                         ; sub_18000CE80+1BA↑r ...
+; .data:000000018012BF50 dword_18012BF50 dd 0                    ; DATA XREF: sub_180029FB0+85↑w
+; .data:000000018012BF50                                         ; sub_180029FB0+1EC↑r ...
+; .data:000000018012BF54 dword_18012BF54 dd 0                    ; DATA XREF: sub_180029FB0+F2B↑w
+; .data:000000018012BF54                                         ; sub_1800BB7E4:loc_1800BB886↑r
+; .data:000000018012BF58 dword_18012BF58 dd 0                    ; DATA XREF: sub_180029FB0+959↑w
+; .data:000000018012BF5C dword_18012BF5C dd 0                    ; DATA XREF: sub_18000BD44:loc_18000BD64↑r
+; .data:000000018012BF5C                                         ; sub_180018930:loc_180018958↑r ...
+; .data:000000018012BF60 dword_18012BF60 dd 0                    ; DATA XREF: sub_180029FB0+12EB↑w
+; .data:000000018012BF60                                         ; sub_180045ADC:loc_180045C29↑r
+; .data:000000018012BF64 dword_18012BF64 dd 0                    ; DATA XREF: sub_180029FB0+353↑w
+; .data:000000018012BF64                                         ; sub_18004AE60:loc_18004B14F↑r
+; .data:000000018012BF68 dword_18012BF68 dd 0                    ; DATA XREF: sub_180029FB0+B52↑w
+; .data:000000018012BF68                                         ; sub_18008F230+FD↑r
+; .data:000000018012BF6C dword_18012BF6C dd 0                    ; DATA XREF: sub_180029FB0+14E1↑w
+; .data:000000018012BF70 dword_18012BF70 dd 0                    ; DATA XREF: sub_180029FB0+110B↑w
+; .data:000000018012BF70                                         ; sub_1800B4924:loc_1800B49C6↑r
+; .data:000000018012BF74 dword_18012BF74 dd 0                    ; DATA XREF: sub_180029FB0+567↑w
+; .data:000000018012BF74                                         ; sub_1800A3BDC:loc_1800A3DBB↑r
+bServerSku.x64        =12BF50
+bRemoteConnAllowed.x64=12BF64
+bFUSEnabled.x64       =12BF74
+bAppServerAllowed.x64 =12BF5C
+bMultimonAllowed.x64  =12BF68
+lMaxUserSessions.x64  =12BF54
+ulMaxDebugSessions.x64=12BF70
+bInitialized.x64      =12BF4C  
 
 [10.0.26100.1-SLInit]
 ; HOW TO search SLInit global variables in IDA Pro:
