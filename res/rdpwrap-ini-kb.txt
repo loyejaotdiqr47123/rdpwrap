@@ -4305,10 +4305,10 @@ SingleUserPatch.x86=1
 SingleUserOffset.x86=4D505
 SingleUserCode.x86=nop
 
-;.text:000000018000C5B3                 call    memset_0
-;.text:000000018000C5B8                 lea     eax, [rdi+10h]
-;.text:000000018000C5BB                 mov     [rsp+1A0h+var_140], 11Ch
-;.text:000000018000C5C3                 lea     esi, [rdi+1]  <- 0
+; .text:000000018000C5B3                 call    memset_0
+; .text:000000018000C5B8                 lea     eax, [rdi+10h]
+; .text:000000018000C5BB                 mov     [rsp+1A0h+var_140], 11Ch
+; .text:000000018000C5C3                 lea     esi, [rdi+1]  <- 0
 SingleUserPatch.x64=1
 SingleUserOffset.x64=C5C5
 SingleUserCode.x64=Zero
@@ -4334,9 +4334,9 @@ SLInitFunc.x64=New_CSLQuery_Initialize
 ; 3. Go to first graph block and find memset, lea, mov, and so on
 
 ; Patch CUtils::IsSingleSessionPerUser(int *)
-.text:00000001800166A5                 call    memset_0
-.text:00000001800166AA                 lea     eax, [rdi+10h]
-.text:00000001800166AD                 mov     dword ptr [rsi], 1 <- 0
+; .text:00000001800166A5                 call    memset_0
+; .text:00000001800166AA                 lea     eax, [rdi+10h]
+; .text:00000001800166AD                 mov     dword ptr [rsi], 1 <- 0
 SingleUserPatch.x64=1
 SingleUserOffset.x64=166AF
 SingleUserCode.x64=Zero
@@ -4348,12 +4348,12 @@ SingleUserCode.x64=Zero
 
 ; Patch CDefPolicy::Query
 ; Original
-.text:000000018001CA05                 cmp     [rcx+63Ch], eax
-.text:000000018001CA0B                 jz      loc_180032448
+; .text:000000018001CA05                 cmp     [rcx+63Ch], eax
+; .text:000000018001CA0B                 jz      loc_180032448
 ; Changed
-.text:000000018001CA05                 mov     eax, 100h
-.text:000000018001CA0A                 mov     [rcx+638h], eax
-.text:000000018001CA10                 nop
+; .text:000000018001CA05                 mov     eax, 100h
+; .text:000000018001CA0A                 mov     [rcx+638h], eax
+; .text:000000018001CA10                 nop
 DefPolicyPatch.x64=1
 DefPolicyOffset.x64=1CA05
 DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
@@ -4369,11 +4369,11 @@ DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
 ; 3. Follow xref, the previous block above is to patch
 
 ; Patch CEnforcementCore::GetInstanceOfTSLicense
-.text:0000000180099D84                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
-.text:0000000180099D89                 test    eax, eax
-.text:0000000180099D8B                 js      short loc_180099DD7
-.text:0000000180099D8D                 cmp     [rbp+arg_18], 0
-.text:0000000180099D91                 jz      short loc_180099DD7 <- jmp
+; .text:0000000180099D84                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
+; .text:0000000180099D89                 test    eax, eax
+; .text:0000000180099D8B                 js      short loc_180099DD7
+; .text:0000000180099D8D                 cmp     [rbp+arg_18], 0
+; .text:0000000180099D91                 jz      short loc_180099DD7 <- jmp
 LocalOnlyPatch.x64=1
 LocalOnlyOffset.x64=99D91
 LocalOnlyCode.x64=jmpshort
@@ -4390,9 +4390,9 @@ SLInitFunc.x64=New_CSLQuery_Initialize
 ; 3. Go to first graph block and find memset, lea, mov, and so on
 
 ; Patch CUtils::IsSingleSessionPerUser(int *)
-.text:0000000180016BF5                 call    memset_0
-.text:0000000180016BFA                 lea     eax, [rdi+10h]
-.text:0000000180016BFD                 mov     dword ptr [rsi], 1  <- 0
+; .text:0000000180016BF5                 call    memset_0
+; .text:0000000180016BFA                 lea     eax, [rdi+10h]
+; .text:0000000180016BFD                 mov     dword ptr [rsi], 1  <- 0
 SingleUserPatch.x64=1
 SingleUserOffset.x64=16BFF
 SingleUserCode.x64=Zero
@@ -4405,12 +4405,12 @@ SingleUserCode.x64=Zero
 
 ; Patch CDefPolicy::Query
 ; Original
-.text:000000018001BBA5                 cmp     [rcx+63Ch], eax
-.text:000000018001BBAB                 jz      loc_1800338EE
+; .text:000000018001BBA5                 cmp     [rcx+63Ch], eax
+; .text:000000018001BBAB                 jz      loc_1800338EE
 ; Changed
-.text:000000018001BBA5                 mov     eax, 100h
-.text:000000018001BBAA                 mov     [rcx+638h], eax
-.text:000000018001BBB0                 nop
+; .text:000000018001BBA5                 mov     eax, 100h
+; .text:000000018001BBAA                 mov     [rcx+638h], eax
+; .text:000000018001BBB0                 nop
 DefPolicyPatch.x64=1
 DefPolicyOffset.x64=1BBA5
 DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
@@ -4426,11 +4426,11 @@ DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
 ; 3. Follow xref, the previous block above is to patch
 
 ; Patch CEnforcementCore::GetInstanceOfTSLicense
-.text:000000018009A124                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
-.text:000000018009A129                 test    eax, eax
-.text:000000018009A12B                 js      short loc_18009A177
-.text:000000018009A12D                 cmp     [rbp+arg_18], 0
-.text:000000018009A131                 jz      short loc_18009A177  <- jmp
+; .text:000000018009A124                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
+; .text:000000018009A129                 test    eax, eax
+; .text:000000018009A12B                 js      short loc_18009A177
+; .text:000000018009A12D                 cmp     [rbp+arg_18], 0
+; .text:000000018009A131                 jz      short loc_18009A177  <- jmp
 LocalOnlyPatch.x64=1
 LocalOnlyOffset.x64=9A131
 LocalOnlyCode.x64=jmpshort
@@ -4447,9 +4447,9 @@ SLInitFunc.x64=New_CSLQuery_Initialize
 ; 3. Go to first graph block and find memset, lea, mov, and so on
 
 ; Patch CUtils::IsSingleSessionPerUser(int *)
-.text:000000018000C3E9                 call    memset_0
-.text:000000018000C3EE                 lea     eax, [rdi+10h]
-.text:000000018000C3F1                 mov     dword ptr [rsi], 1 <- 0
+; .text:000000018000C3E9                 call    memset_0
+; .text:000000018000C3EE                 lea     eax, [rdi+10h]
+; .text:000000018000C3F1                 mov     dword ptr [rsi], 1 <- 0
 SingleUserPatch.x64=1
 SingleUserOffset.x64=C3F3
 SingleUserCode.x64=Zero
@@ -4461,12 +4461,12 @@ SingleUserCode.x64=Zero
 
 ; Patch CDefPolicy::Query
 ; Original
-.text:000000018001C2E5                 cmp     [rcx+63Ch], eax
-.text:000000018001C2EB                 jz      loc_180035366
+; .text:000000018001C2E5                 cmp     [rcx+63Ch], eax
+; .text:000000018001C2EB                 jz      loc_180035366
 ; Changed
-.text:000000018001C2E5                 mov     eax, 100h
-.text:000000018001C2EA                 mov     [rcx+638h], eax
-.text:000000018001C2F0                 nop
+; .text:000000018001C2E5                 mov     eax, 100h
+; .text:000000018001C2EA                 mov     [rcx+638h], eax
+; .text:000000018001C2F0                 nop
 DefPolicyPatch.x64=1
 DefPolicyOffset.x64=1C2E5
 DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
@@ -4482,11 +4482,11 @@ DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
 ; 3. Follow xref, the previous block above is to patch
 
 ; Patch CEnforcementCore::GetInstanceOfTSLicense
-.text:000000018009D604                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
-.text:000000018009D609                 test    eax, eax
-.text:000000018009D60B                 js      short loc_18009D657
-.text:000000018009D60D                 cmp     [rbp+arg_18], 0
-.text:000000018009D611                 jz      short loc_18009D657  <- jmp
+; .text:000000018009D604                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
+; .text:000000018009D609                 test    eax, eax
+; .text:000000018009D60B                 js      short loc_18009D657
+; .text:000000018009D60D                 cmp     [rbp+arg_18], 0
+; .text:000000018009D611                 jz      short loc_18009D657  <- jmp
 LocalOnlyPatch.x64=1
 LocalOnlyOffset.x64=9D611
 LocalOnlyCode.x64=jmpshort
@@ -4503,9 +4503,9 @@ SLInitFunc.x64=New_CSLQuery_Initialize
 ; 3. Go to first graph block and find memset, lea, mov, and so on
 
 ; Patch CUtils::IsSingleSessionPerUser(int *)
-.text:000000018000C3E9                 call    memset_0
-.text:000000018000C3EE                 lea     eax, [rdi+10h]
-.text:000000018000C3F1                 mov     dword ptr [rsi], 1 <- 0
+; .text:000000018000C3E9                 call    memset_0
+; .text:000000018000C3EE                 lea     eax, [rdi+10h]
+; .text:000000018000C3F1                 mov     dword ptr [rsi], 1 <- 0
 SingleUserPatch.x64=1
 SingleUserOffset.x64=C3F3
 SingleUserCode.x64=Zero
@@ -4517,12 +4517,12 @@ SingleUserCode.x64=Zero
 
 ; Patch CDefPolicy::Query
 ; Original
-.text:000000018001C2E5                 cmp     [rcx+63Ch], eax
-.text:000000018001C2EB                 jz      loc_180035366
+; .text:000000018001C2E5                 cmp     [rcx+63Ch], eax
+; .text:000000018001C2EB                 jz      loc_180035366
 ; Changed
-.text:000000018001C2E5                 mov     eax, 100h
-.text:000000018001C2EA                 mov     [rcx+638h], eax
-.text:000000018001C2F0                 nop
+; .text:000000018001C2E5                 mov     eax, 100h
+; .text:000000018001C2EA                 mov     [rcx+638h], eax
+; .text:000000018001C2F0                 nop
 DefPolicyPatch.x64=1
 DefPolicyOffset.x64=1C2E5
 DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
@@ -4538,11 +4538,11 @@ DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
 ; 3. Follow xref, the previous block above is to patch
 
 ; Patch CEnforcementCore::GetInstanceOfTSLicense
-.text:000000018009D604                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
-.text:000000018009D609                 test    eax, eax
-.text:000000018009D60B                 js      short loc_18009D657
-.text:000000018009D60D                 cmp     [rbp+arg_18], 0
-.text:000000018009D611                 jz      short loc_18009D657  <- jmp
+; .text:000000018009D604                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SAJAEAU_GUID@@PEAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
+; .text:000000018009D609                 test    eax, eax
+; .text:000000018009D60B                 js      short loc_18009D657
+; .text:000000018009D60D                 cmp     [rbp+arg_18], 0
+; .text:000000018009D611                 jz      short loc_18009D657  <- jmp
 LocalOnlyPatch.x64=1
 LocalOnlyOffset.x64=9D611
 LocalOnlyCode.x64=jmpshort
