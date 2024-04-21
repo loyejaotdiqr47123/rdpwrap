@@ -4327,6 +4327,104 @@ SLInitHook.x64=1
 SLInitOffset.x64=1ABFC
 SLInitFunc.x64=New_CSLQuery_Initialize
 
+[10.0.19041.4353]
+; HOW TO search CUtils::IsSingleSessionPerUser(int *) function in IDA Pro:
+; 1. Search text: CUtils::IsSingleSessionPerUser(int *)
+; 2. All xrefs will point to this function (in x64 version xref points to subroutine, so you need to go one level up)
+; 3. Go to first graph block and find memset, lea, mov, and so on
+
+; Patch CUtils::IsSingleSessionPerUser(int *)
+; .text:100455E8 ; 36:   memset(&Dst, 0, 0x11Cu);
+; .text:100455E8                 push    eax             ; Dst
+; .text:100455E9 ; 35:   v23 = 1;
+; .text:100455E9                 mov     [ebp+var_12C], 1
+; .text:100455F3                 call    _memset
+; .text:100455F8 ; 37:   Dst = 284;
+; .text:100455F8                 add     esp, 0Ch
+; .text:100455FB                 mov     [ebp+Dst], ebx
+; .text:10045601 ; 38:   *v2 = 1;
+; .text:10045601                 xor     ebx, ebx
+; .text:10045603                 mov     dword ptr [esi], 1 <- 0
+SingleUserPatch.x86=1
+SingleUserOffset.x86=45605
+SingleUserCode.x86=Zero
+
+; .text:0000000180018351                 call    memset
+; .text:0000000180018356                 lea     eax, [rdi+10h]
+; .text:0000000180018359                 mov     dword ptr [rsi], 1 <- 0
+SngleUserPatch.x64=1
+SingleUserOffset.x64=1835B
+SingleUserCode.x64=Zero
+
+; HOW TO search CDefPolicy::Query function in IDA Pro:
+; 1. Search text: CDefPolicy::Query
+; 2. All xrefs will point to this function (in x64 version xref sometimes points to subroutine, so you need to go one level up)
+; 3. Go to first graph block and find cmp/jz instructions on the bottom of block
+
+; Patch CDefPolicy::Query
+; Original
+; .text:100415B9                 cmp     eax, [ecx+320h]
+; .text:100415BF                 jz      loc_10079022
+; Changed
+; .text:100415B9                 mov     eax, 100h
+; .text:100415BE                 mov     [ecx+320h], eax
+; .text:100415C4                 nop
+DefPolicyPatch.x86=1
+DefPolicyOffset.x86=415B9
+DefPolicyCode.x86=CDefPolicy_Query_eax_ecx
+
+; Original
+; .text:000000018001F375                 cmp     [rcx+63Ch], eax
+; .text:000000018001F37B                 jz      loc_1800335E8
+; Changed
+; .text:000000018001F375                 mov     eax, 100h
+; .text:000000018001F37A                 mov     [rcx+638h], eax
+; .text:000000018001F380                 nop
+DeDefPolicyPatch.x64=1
+DefPolicyOffset.x64=1F375
+DefPolicyCode.x64=CDefPolicy_Query_eax_rcx
+
+; HOW TO search CEnforcementCore::GetInstanceOfTSLicense function in IDA Pro:
+; 1. Search text: CSLQuery::IsLicenseTypeLocalOnly
+; 2. All xrefs will point to this function
+; 3. Go to function beginning and check ; CODE XREF string, it will point to GetInstanceOfTSLicense function
+; 4. Follow CODE XREF, switch to graph view, the next block below is to patch
+; Another way:
+; 1. Search text: CEnforcementCore::GetInstanceOfTSLicense FAILED - License type me
+; 2. All xrefs will point to GetInstanceOfTSLicense
+; 3. Follow xref, the previous block above is to patch
+
+; Patch CEnforcementCore::GetInstanceOfTSLicense
+; .text:100C1BAD                 call    ?IsLicenseTypeLocalOnly@CSLQuery@@SGJAAU_GUID@@PAH@Z ; CSLQuery::IsLicenseTypeLocalOnly(_GUID &,int *)
+; .text:100C1BB2                 test    eax, eax
+; .text:100C1BB4                 js      short loc_100C1BED
+; .text:100C1BB6                 cmp     [ebp+var_8], edi
+; .text:100C1BB9                 jz      short loc_100C1BED <- jmp
+LocalOnlyPatch.x86=1
+LocalOnlyOffset.x86=C1BB9
+LocalOnlyCode.x86=jmpshort
+
+; .text:0000000180091274                 call    sub_1800ABBD8
+; .text:0000000180091279                 test    eax, eax
+; .text:000000018009127B                 js      short loc_1800912C7
+; .text:000000018009127D                 cmp     [rbp+arg_18], 0
+; .text:0000000180091281                 jz      short loc_1800912C7 <- jmp
+; .text:0000000180091283                 cmp     cs:dword_180122068, 2
+; .text:000000018009128A                 mov     ebx, 80070005h
+; .text:000000018009128F                 jbe     loc_18009135F
+; .text:0000000180091295                 lea     rax, aCenforcementco_7 ; "CEnforcementCore::GetInstanceOfTSLicens"...
+LocalOnlyPatch.x64=1
+LocalOnlyOffset.x64=91281
+LocalOnlyCode.x64=jmpshort
+
+; Hook CSLQuery::Initialize
+SLInitHook.x86=1
+SLInitOffset.x86=700D8
+SLInitFunc.x86=New_CSLQuery_Initialize
+SLInitHook.x64=1
+SLInitOffset.x64=2885C
+SLInitFunc.x64=New_CSLQuery_Initialize
+
 [10.0.20348.2400]
 ; HOW TO search CUtils::IsSingleSessionPerUser(int *) function in IDA Pro:
 ; 1. Search text: CUtils::IsSingleSessionPerUser(int *)
@@ -6691,6 +6789,57 @@ bRemoteConnAllowed.x64=ECAC4
 bMultimonAllowed.x64  =ECAC8
 ulMaxDebugSessions.x64=ECACC
 bFUSEnabled.x64       =ECAD0
+
+[10.0.19041.4353-SLInit]
+; HOW TO search SLInit global variables in IDA Pro:
+; 1. Shift+F4 opens the Names Window
+; 2. Find the following strings
+; bServerSku
+; bRemoteConnAllowed
+; bFUSEnabled
+; bAppServerAllowed
+; bMultimonAllowed
+; lMaxUserSessions
+; ulMaxDebugSessions
+; bInitialized
+
+bServerSku.x86        =E3990
+bRemoteConnAllowed.x86=E39A4
+bFUSEnabled.x86       =E39B0
+bAppServerAllowed.x86 =E399C
+bMultimonAllowed.x86  =E39A8
+lMaxUserSessions.x86  =E3994
+ulMaxDebugSessions.x86=E39AC
+bInitialized.x86      =E398C
+
+; .data:0000000180123094 dword_180123094 dd ?                    ; DATA XREF: sub_180003A1C+40↑r
+; .data:0000000180123094                                         ; sub_180003B88+22↑r ...
+; .data:0000000180123098 dword_180123098 dd ?                    ; DATA XREF: sub_18002885C+85↑w
+; .data:0000000180123098                                         ; sub_18002885C+1C8↑r ...
+; .data:000000018012309C dword_18012309C dd ?                    ; DATA XREF: sub_180003B88:loc_180003BB6↑r
+; .data:000000018012309C                                         ; sub_18002885C+E21↑w
+; .data:00000001801230A0 dword_1801230A0 dd ?                    ; DATA XREF: sub_18002885C+8AF↑w
+; .data:00000001801230A4 dword_1801230A4 dd ?                    ; DATA XREF: sub_18000F268:loc_18000F288↑r
+; .data:00000001801230A4                                         ; sub_180011E60:loc_180011E89↑r ...
+; .data:00000001801230A8 dword_1801230A8 dd ?                    ; DATA XREF: sub_180003A1C:loc_180003A6A↑r
+; .data:00000001801230A8                                         ; sub_18002885C+119E↑w
+; .data:00000001801230AC dword_1801230AC dd ?                    ; DATA XREF: sub_180003C60:loc_180003EFB↑r
+; .data:00000001801230AC                                         ; sub_18002885C+30F↑w
+; .data:00000001801230B0 dword_1801230B0 dd ?                    ; DATA XREF: sub_18002885C+A88↑w
+; .data:00000001801230B0                                         ; sub_180082C44:loc_180082D57↑r
+; .data:00000001801230B4 dword_1801230B4 dd ?                    ; DATA XREF: sub_180005F54:loc_180005FFF↑r
+; .data:00000001801230B4                                         ; sub_1800062C0:loc_1800062F3↑r ...
+; .data:00000001801230B8 dword_1801230B8 dd ?                    ; DATA XREF: sub_18002885C+4FD↑w
+; .data:00000001801230B8   
+
+bServerSku.x64        =123098
+bRemoteConnAllowed.x64=1230AC
+bFUSEnabled.x64       =1230B8
+bAppServerAllowed.x64 =1230A4
+bMultimonAllowed.x64  =1230B0
+lMaxUserSessions.x64  =12309C
+ulMaxDebugSessions.x64=1230B4
+bInitialized.x64      =123094
 
 [10.0.20348.2400-SLInit]
 ; HOW TO search SLInit global variables in IDA Pro:
