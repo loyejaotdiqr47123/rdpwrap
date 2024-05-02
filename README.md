@@ -4,7 +4,6 @@
 [English](https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README.md)
 -------------------------------------------------------------------------------------------------------------
 
-(I am in the seventh grade, the update speed is slow, such as mentioning issues please be patient)
 
 This project supports the Win11 Remote Desktop Multi-User Hack!
 
@@ -29,10 +28,10 @@ How to use: 1.
 1.Download the latest version of rdpwrap from [https://github.com/loyejaotdiqr47123/rdpwrap/releases](https://github.com/loyejaotdiqr47123/rdpwrap/releases).
 
 2. Unzip it and run install.bat
-! [image](https://img2.imgtp.com/2024/03/09/c0QN6eKl.png)
+![image](https://img2.imgtp.com/2024/03/09/c0QN6eKl.png)
 
 3.Then open RDPConf.exe to see if it is all green!
-! [image](https://img2.imgtp.com/2024/03/09/XvYspUTI.png)
+![image](https://img2.imgtp.com/2024/03/09/XvYspUTI.png)
 
 
 
