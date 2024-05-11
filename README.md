@@ -3,6 +3,10 @@
 [中文](https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README_CN.md) <br>
 [English](https://github.com/loyejaotdiqr47123/rdpwrap/blob/master/README.md)
 -------------------------------------------------------------------------------------------------------------
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=loyejaotdiqr47123/rdpwrap&type=Date)](https://star-history.com/?lng=en#loyejaotdiqr47123/rdpwrap&Date)
+
 
 
 This project supports the Win11 Remote Desktop Multi-User Hack!
