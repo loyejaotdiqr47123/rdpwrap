@@ -14,7 +14,6 @@
 </a>
 
 
-
 This project supports the Win11 Remote Desktop Multi-User Hack!
 
 rdpwrap already supports 24h2
