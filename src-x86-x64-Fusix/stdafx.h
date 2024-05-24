@@ -1,23 +1,23 @@
-// stdafx.h: включаемый файл дл€ стандартных системных включаемых файлов
-// или включаемых файлов дл€ конкретного проекта, которые часто используютс€, но
-// не часто измен€ютс€
-//
+// This file defines the main process for a Windows service, which is responsible for starting and managing the service. Here, we define multiple function types that help implement the main process.
 
 #pragma once
 
+// Include the header file for Windows version requirements
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // »сключите редко используемые компоненты из заголовков Windows
+// Define macro to disable compiler warnings
+#define WIN32_LEAN_AND_MEAN      
 #define _CRT_SECURE_NO_WARNINGS
 
 
-// ‘айлы заголовков Windows:
+// Include the Windows header files
 #include <windows.h>
 #include <TlHelp32.h>
 
+// Define function types
+typedef VOID(WINAPI* SERVICEMAIN)(DWORD, LPTSTR*);
+typedef VOID(WINAPI* SVCHOSTPUSHSERVICEGLOBALS)(VOID*);
+typedef HRESULT(WINAPI* SLGETWINDOWSINFORMATIONDWORD)(PCWSTR, DWORD*);
 
-// TODO: ”становите здесь ссылки на дополнительные заголовки, требующиес€ дл€ программы
+// Implement the main process for the Windows service
 
-typedef VOID	(WINAPI* SERVICEMAIN)(DWORD, LPTSTR*);
-typedef VOID	(WINAPI* SVCHOSTPUSHSERVICEGLOBALS)(VOID*);
-typedef HRESULT (WINAPI* SLGETWINDOWSINFORMATIONDWORD)(PCWSTR, DWORD*);

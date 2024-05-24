@@ -13,11 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
+#include <algorithm>
 #include "stdafx.h"
 #include <Windows.h>
 #include <stdlib.h>
 #include "IniFile.h"
+#include <vector>
+#include <string>
 
 INI_FILE::INI_FILE(wchar_t *FilePath)
 {
@@ -61,6 +63,7 @@ INI_FILE::~INI_FILE()
 	delete FileRaw;
 }
 
+/*
 bool INI_FILE::CreateStringsMap()
 {
 	DWORD StringsCount = 1;
@@ -88,10 +91,54 @@ bool INI_FILE::CreateStringsMap()
 
 	return true;
 }
+*/
+bool INI_FILE::CreateStringsMap()
+{
+    DWORD StringsCount = 0;
+    DWORD currentPosition = 0;
 
+    for (DWORD i = 0; i < FileSize; ++i)
+    {
+        if (i < FileSize - 1 && FileRaw[i] == '\r' && FileRaw[i + 1] == '\n')
+        {
+            ++StringsCount;
+            currentPosition = i + 2;
+        }
+    }
+
+    if (currentPosition < FileSize)
+    {
+        ++StringsCount;
+    }
+
+    FileStringsCount = StringsCount;
+    FileStringsMap = new DWORD[FileStringsCount + 1];
+    FileStringsMap[0] = 0;
+
+    currentPosition = 0;
+    DWORD mapIndex = 1;
+    for (DWORD i = 0; i < FileSize; ++i)
+    {
+        if (i < FileSize - 1 && FileRaw[i] == '\r' && FileRaw[i + 1] == '\n')
+        {
+            FileStringsMap[mapIndex] = currentPosition;
+            ++mapIndex;
+            currentPosition = i + 2;
+        }
+    }
+
+    if (currentPosition < FileSize)
+    {
+        FileStringsMap[mapIndex] = currentPosition;
+    }
+
+    FileStringsMap[FileStringsCount] = FileSize;
+
+    return true;
+}
 int INI_FILE::StrTrim(char* Str)
 {
-	int i = 0, j;
+	size_t i = 0, j;
 	while ((Str[i] == ' ') || (Str[i] == '\t'))
 	{
 		i++;
@@ -127,7 +174,12 @@ DWORD INI_FILE::GetFileStringFromNum(DWORD StringNumber, char *RetString, DWORD 
 
 	for (DWORD i = FileStringsMap[StringNumber]; i < FileSize; i++)
 	{
-		if ((FileRaw[i] == '\r' && FileRaw[i + 1] == '\n') || i == (FileSize - 1))
+		if (i == (FileSize - 1))
+		{
+			EndStringPos = FileSize;
+			break;
+		}
+		if (FileRaw[i] == '\r' && FileRaw[i + 1] == '\n')
 		{
 			EndStringPos = i;
 			break;
@@ -143,6 +195,7 @@ DWORD INI_FILE::GetFileStringFromNum(DWORD StringNumber, char *RetString, DWORD 
 	return StringSize;
 }
 
+/*
 bool INI_FILE::IsVariable(char *Str, DWORD StrSize)
 {
 	bool Quotes = false;
@@ -154,7 +207,30 @@ bool INI_FILE::IsVariable(char *Str, DWORD StrSize)
 	}
 	return false;
 }
+*/
+/*
+bool INI_FILE::IsVariable(char *Str, DWORD StrSize) {
+    if (Str == nullptr || StrSize == 0) return false;
 
+    char *equalsPos = std::find(Str, Str + StrSize, '=');
+    if (equalsPos == Str + StrSize) return false;
+
+    bool inQuotes = false;
+    for (char *quotePos = Str; quotePos < equalsPos; ++quotePos) {
+        if (*quotePos == '"
+*/
+bool INI_FILE::IsVariable(char *Str, DWORD StrSize)
+{
+    bool inQuotes = false;
+    for (char c; StrSize--; ) {
+        c = *Str++;
+        if (c == '"' || c == '\'') inQuotes = !inQuotes;
+        else if (c == '=' && !inQuotes) return true;
+        else if (c == '\0') break;
+    }
+    return false;
+}
+/*
 bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD StrSize)
 {
 	bool Quotes = false;
@@ -167,7 +243,7 @@ bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD Str
 			memset(Variable->VariableName, 0, MAX_STRING_LEN);
 			memset(Variable->VariableValue, 0, MAX_STRING_LEN);
 			memcpy(Variable->VariableName, Str, i);
-			memcpy(Variable->VariableValue, &(Str[i + 1]), StrSize - (i - 1));
+			memcpy(Variable->VariableValue, &(Str[i + 1]), StrSize - i - 1);
 			StrTrim(Variable->VariableName);
 			StrTrim(Variable->VariableValue);
 			break;
@@ -175,7 +251,34 @@ bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD Str
 	}
 	return true;
 }
+*/
+bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD StrSize)
+{
+    char *pEqual = Str;
+    bool inQuotes = false;
 
+    while (*pEqual && pEqual - Str < StrSize) {
+        if (*pEqual == '"' || *pEqual == '\'') inQuotes = !inQuotes;
+        if (*pEqual == '=' && !inQuotes) break;
+        pEqual++;
+    }
+
+    if (*pEqual != '=') return false; // no '=' found
+
+    size_t nameLen = pEqual - Str;
+    size_t valueLen = StrSize - (pEqual - Str) - 1;
+
+    memset(Variable->VariableName, 0, MAX_STRING_LEN);
+    memset(Variable->VariableValue, 0, MAX_STRING_LEN);
+
+    strncpy(Variable->VariableName, Str, nameLen);
+    strncpy(Variable->VariableValue, pEqual + 1, valueLen);
+
+    StrTrim(Variable->VariableName);
+    StrTrim(Variable->VariableValue);
+
+    return true;
+}
 bool INI_FILE::Parse()
 {
 	DWORD CurrentStringNum = 0;
@@ -270,6 +373,261 @@ bool INI_FILE::Parse()
 	return true;
 }
 
+/*
+bool INI_FILE::Parse() {
+    std::vector<INI_SECTION> sections;
+    int currentSectionNum = -1;
+
+    for (DWORD currentStringNum = 0; currentStringNum < FileStringsCount; ++currentStringNum) {
+        std::string currentString;
+        DWORD currentStringSize = GetFileStringFromNum(currentStringNum, nullptr, 0);
+        if (currentStringSize == 0) {
+            continue; // Empty string or failed to get the size
+        }
+
+        currentString.resize(currentStringSize);
+        if (!GetFileStringFromNum(currentStringNum, &currentString[0], currentStringSize + 1)) {
+            continue; // Failed to get the string
+        }
+
+        if (currentString[0] == ';') {
+            continue; // It's a comment
+        }
+
+        if (currentString[0] == '[' && currentString[currentString.length() - 1] == ']') {
+            // It's a section declaration
+            ++currentSectionNum;
+            sections.emplace_back();
+            sections[currentSectionNum].SectionName = currentString.substr(1, currentString.length() - 2);
+            sections[currentSectionNum].VariablesCount = 0;
+            continue;
+        }
+
+        if (IsVariable(currentString.c_str(), currentString.length())) {
+            // It's a variable
+            INI_SECTION_VARIABLE variable;
+            if (FillVariable(&variable, currentString.c_str(), currentString.length())) {
+                sections[currentSectionNum].Variables.push_back(variable);
+                sections[currentSectionNum].VariablesCount++;
+            }
+        }
+    }
+
+    IniData.SectionCount = sections.size();
+    IniData.Section = sections.data(); // Assuming IniData.Section is of type INI_SECTION*.
+
+    return true;
+}
+*/
+/*
+bool INI_FILE::Parse() {
+    std::vector<INI_SECTION> sections;
+    DWORD currentSectionNum = -1;
+    DWORD currentVariableNum = -1;
+
+    for (DWORD currentStringNum = 0; currentStringNum < FileStringsCount; currentStringNum++) {
+        char currentString[512];
+        DWORD currentStringSize = GetFileStringFromNum(currentStringNum, currentString, 512);
+
+        if (currentString[0] == ';') continue; // It's a comment
+
+        if (currentString[0] == '[' && currentString[currentStringSize - 1] == ']') {
+            // It's a section declaration
+            currentSectionNum++;
+            sections.emplace_back();
+            sections[currentSectionNum].SectionName = std::string(&(currentString[1]), currentStringSize - 2);
+            sections[currentSectionNum].VariablesCount = 0;
+            currentVariableNum = 0;
+            continue;
+        }
+
+        if (IsVariable(currentString, currentStringSize)) {
+            // It's a variable
+            sections[currentSectionNum].VariablesCount++;
+            sections[currentSectionNum].Variables.emplace_back();
+            FillVariable(&(sections[currentSectionNum].Variables[currentVariableNum]), currentString, currentStringSize);
+            currentVariableNum++;
+            continue;
+        }
+    }
+
+    IniData.SectionCount = sections.size();
+    IniData.Section = sections.data();
+
+    return true;
+}
+*/
+/*
+bool INI_FILE::Parse() {
+    DWORD CurrentStringNum = 0;
+    char* CurrentString = nullptr;
+    DWORD CurrentStringSize = 0;
+
+    DWORD SectionsCount = 0;
+    DWORD* SectionVariableCount = nullptr;
+
+    DWORD CurrentSectionNum = 0;
+    DWORD CurrentVariableNum = 0;
+
+    for (CurrentStringNum = 0; CurrentStringNum < FileStringsCount; ++CurrentStringNum) {
+        CurrentStringSize = GetFileStringFromNum(CurrentStringNum, nullptr, 0);
+        CurrentString = new char[CurrentStringSize + 1];
+        GetFileStringFromNum(CurrentStringNum, CurrentString, CurrentStringSize + 1);
+
+        if (CurrentString[0] == ';') {
+            delete[] CurrentString;
+            continue;
+        }
+
+        if (CurrentString[0] == '[' && CurrentString[CurrentStringSize - 1] == ']') {
+            ++SectionsCount;
+        } else if (IsVariable(CurrentString, CurrentStringSize)) {
+            if (SectionsCount > 0) {
+                if (SectionVariableCount == nullptr) {
+                    SectionVariableCount = new DWORD[SectionsCount];
+                    memset(SectionVariableCount, 0, sizeof(DWORD) * SectionsCount);
+                }
+                ++SectionVariableCount[CurrentSectionNum];
+            }
+        }
+
+        delete[] CurrentString;
+    }
+
+    IniData.SectionCount = SectionsCount;
+    IniData.Section = new INI_SECTION[SectionsCount];
+    memset(IniData.Section, 0, sizeof(INI_SECTION) * SectionsCount);
+
+    for (CurrentStringNum = 0, CurrentSectionNum = 0, CurrentVariableNum = 0; 
+         CurrentStringNum < FileStringsCount; 
+         ++CurrentStringNum) {
+        CurrentStringSize = GetFileStringFromNum(CurrentStringNum, nullptr, 0);
+        CurrentString = new char[CurrentStringSize + 1];
+        GetFileStringFromNum(CurrentStringNum, CurrentString, CurrentStringSize + 1);
+
+        if (CurrentString[0] == ';') {
+            delete[] CurrentString;
+            continue;
+        }
+
+        if (CurrentString[0] == '[' && CurrentString[CurrentStringSize - 1] == ']') {
+            memcpy(IniData.Section[CurrentSectionNum].SectionName, &CurrentString[1], CurrentStringSize - 2);
+            IniData.Section[CurrentSectionNum].SectionName[CurrentStringSize - 2] = '\0';
+            IniData.Section[CurrentSectionNum].VariablesCount = SectionVariableCount[CurrentSectionNum];
+            IniData.Section[CurrentSectionNum].Variables = new INI_SECTION_VARIABLE[SectionVariableCount[CurrentSectionNum]];
+            memset(IniData.Section[CurrentSectionNum].Variables, 0, sizeof(INI_SECTION_VARIABLE) * SectionVariableCount[CurrentSectionNum]);
+            CurrentVariableNum = 0;
+            ++CurrentSectionNum;
+        } else if (IsVariable(CurrentString, CurrentStringSize)) {
+            FillVariable(&(IniData.Section[CurrentSectionNum - 1].Variables[CurrentVariableNum]), CurrentString, CurrentStringSize);
+            ++CurrentVariableNum;
+        }
+
+        delete[] CurrentString;
+    }
+
+    delete[] SectionVariableCount;
+
+    return true;
+}
+*/
+
+/*
+bool INI_FILE::Parse()
+{
+	DWORD CurrentStringNum = 0;
+	char CurrentString[512];
+	DWORD CurrentStringSize = 0;
+
+	DWORD SectionsCount = 0;
+	DWORD VariablesCount = 0;
+
+	DWORD CurrentSectionNum = -1;
+	DWORD CurrentVariableNum = -1;
+
+	// Calculate sections count
+	for (DWORD CurrentStringNum = 0; CurrentStringNum < FileStringsCount; CurrentStringNum++)
+	{
+		CurrentStringSize = GetFileStringFromNum(CurrentStringNum, CurrentString, 512);
+
+		if (CurrentString[0] == ';') continue; // It's a comment
+
+		if (CurrentString[0] == '[' && CurrentString[CurrentStringSize - 1] == ']')	// It's section declaration
+		{
+			SectionsCount++;
+			continue;
+		}
+	}
+
+	DWORD *SectionVariableCount = new DWORD[SectionsCount];
+	memset(SectionVariableCount, 0x00, sizeof(DWORD)*SectionsCount);
+
+	for (DWORD CurrentStringNum = 0; CurrentStringNum < FileStringsCount; CurrentStringNum++)
+	{
+		CurrentStringSize = GetFileStringFromNum(CurrentStringNum, CurrentString, 512);
+
+		if (CurrentString[0] == ';') continue; // It's a comment
+
+
+		if (CurrentString[0] == '[' && CurrentString[CurrentStringSize - 1] == ']')	// It's section declaration
+		{
+			CurrentSectionNum++;
+			continue;
+		}
+		if (IsVariable(CurrentString, CurrentStringSize))
+		{
+			VariablesCount++;
+			SectionVariableCount[CurrentSectionNum]++;
+			continue;
+		}
+	}
+
+	IniData.SectionCount = SectionsCount;
+	IniData.Section = new INI_SECTION[SectionsCount];
+	memset(IniData.Section, 0x00, sizeof(PINI_SECTION)*SectionsCount);
+
+	for (DWORD i = 0; i < SectionsCount; i++)
+	{
+		IniData.Section[i].VariablesCount = SectionVariableCount[i];
+		IniData.Section[i].Variables = new INI_SECTION_VARIABLE[SectionVariableCount[i]];
+		memset(IniData.Section[i].Variables, 0x00, sizeof(INI_SECTION_VARIABLE)*SectionVariableCount[i]);
+	}
+
+	delete[] SectionVariableCount;
+
+	CurrentSectionNum = -1;
+	CurrentVariableNum = -1;
+
+	for (DWORD CurrentStringNum = 0; CurrentStringNum < FileStringsCount; CurrentStringNum++)
+	{
+		CurrentStringSize = GetFileStringFromNum(CurrentStringNum, CurrentString, 512);
+
+		if (CurrentString[0] == ';') // It's a comment
+		{
+			continue;
+		}
+
+		if (CurrentString[0] == '[' && CurrentString[CurrentStringSize - 1] == ']')
+		{
+			CurrentSectionNum++;
+			CurrentVariableNum = 0;
+			memset(IniData.Section[CurrentSectionNum].SectionName, 0, MAX_STRING_LEN);
+			memcpy(IniData.Section[CurrentSectionNum].SectionName, &(CurrentString[1]), (CurrentStringSize - 2));
+			continue;
+		}
+
+		if (IsVariable(CurrentString, CurrentStringSize))
+		{
+			FillVariable(&(IniData.Section[CurrentSectionNum].Variables[CurrentVariableNum]), CurrentString, CurrentStringSize);
+			CurrentVariableNum++;
+			continue;
+		}
+	}
+
+	return true;
+}
+
+*/
 PINI_SECTION INI_FILE::GetSection(char *SectionName)
 {
 	for (DWORD i = 0; i < IniData.SectionCount; i++)
