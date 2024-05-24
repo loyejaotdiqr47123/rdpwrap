@@ -358,7 +358,7 @@ bool INI_FILE::Parse()
 			CurrentSectionNum++;
 			CurrentVariableNum = 0;
 			memset(IniData.Section[CurrentSectionNum].SectionName, 0, MAX_STRING_LEN);
-			memcpy(IniData.Section[CurrentSectionNum].SectionName, &(CurrentString[1]), (CurrentStringSize - 2));
+			memcpy(IniData.Section[CurrentSectionNum].SectionName, &(CurrentString[1]), (static_cast<size_t>(CurrentStringSize) - 2));
 			continue;
 		}
 
