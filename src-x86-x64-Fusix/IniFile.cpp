@@ -230,7 +230,7 @@ bool INI_FILE::IsVariable(char *Str, DWORD StrSize)
     }
     return false;
 }
-/*
+
 bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD StrSize)
 {
 	bool Quotes = false;
@@ -243,7 +243,7 @@ bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD Str
 			memset(Variable->VariableName, 0, MAX_STRING_LEN);
 			memset(Variable->VariableValue, 0, MAX_STRING_LEN);
 			memcpy(Variable->VariableName, Str, i);
-			memcpy(Variable->VariableValue, &(Str[i + 1]), StrSize - i - 1);
+			memcpy(Variable->VariableValue, &(Str[i + 1]), static_cast<size_t>(StrSize) - i - 1);
 			StrTrim(Variable->VariableName);
 			StrTrim(Variable->VariableValue);
 			break;
@@ -251,7 +251,8 @@ bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD Str
 	}
 	return true;
 }
-*/
+
+/*
 bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD StrSize)
 {
     char *pEqual = Str;
@@ -279,6 +280,7 @@ bool INI_FILE::FillVariable(INI_SECTION_VARIABLE *Variable, char *Str, DWORD Str
 
     return true;
 }
+*/
 bool INI_FILE::Parse()
 {
 	DWORD CurrentStringNum = 0;
@@ -727,7 +729,7 @@ bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, INI_V
 #endif
 	return true;
 }
-
+/*
 bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, INI_VAR_BYTEARRAY *RetVariable)
 {
 	bool Status = false;
@@ -736,7 +738,7 @@ bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, INI_V
 	Status = GetVariableInSectionPrivate(SectionName, VariableName, &Variable);
 	if (!Status)	return Status;
 
-	DWORD ValueLen = strlen(Variable.VariableValue);
+	size_t ValueLen = strlen(Variable.VariableValue);
 	if ((ValueLen % 2) != 0) return false;
 
 	// for security reasons not more than 16 bytes
@@ -789,8 +791,41 @@ bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, INI_V
 		case 'F': RetVariable->Value[(i / 2)] += 15; break;
 		}
 	}
-	RetVariable->ArraySize = ValueLen / 2;
+	RetVariable->ArraySize = Byte(ValueLen / 2);
 	return true;
+}
+*/
+#include <cctype>
+
+bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, INI_VAR_BYTEARRAY *RetVariable)
+{
+    INI_SECTION_VARIABLE Variable = {};
+    if (!GetVariableInSectionPrivate(SectionName, VariableName, &Variable))
+        return false;
+
+    size_t ValueLen = strlen(Variable.VariableValue);
+    if (ValueLen % 2 != 0 || ValueLen > 64) 
+        return false;
+
+    for (size_t i = 0; i < ValueLen; ++i)
+    {
+        if (!std::isxdigit(Variable.VariableValue[i]))
+            return false;
+    }
+
+    memset(RetVariable, 0x00, sizeof(*RetVariable));
+    strncpy(RetVariable->Name, Variable.VariableName, MAX_STRING_LEN);
+    RetVariable->ArraySize = static_cast<BYTE>(ValueLen / 2);
+
+    for (size_t i = 0; i < ValueLen; i += 2)
+    {
+        char high = std::toupper(Variable.VariableValue[i]);
+        char low = std::toupper(Variable.VariableValue[i + 1]);
+        RetVariable->Value[i / 2] = (high <= '9' ? high - '0' : high - 'A' + 10) * 16 +
+                                     (low <= '9' ? low - '0' : low - 'A' + 10);
+    }
+
+    return true;
 }
 
 bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, bool *RetVariable)

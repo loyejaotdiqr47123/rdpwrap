@@ -53,28 +53,44 @@ struct FARJMP
 };
 #endif
 
-FARJMP Old_SLGetWindowsInformationDWORD, Stub_SLGetWindowsInformationDWORD;
-SLGETWINDOWSINFORMATIONDWORD _SLGetWindowsInformationDWORD;
+FARJMP Old_SLGetWindowsInformationDWORD{}, Stub_SLGetWindowsInformationDWORD{};
+SLGETWINDOWSINFORMATIONDWORD _SLGetWindowsInformationDWORD = nullptr;
 
 INI_FILE *IniFile;
 wchar_t LogFile[256] = L"\\rdpwrap.txt\0";
 HMODULE hTermSrv;
 HMODULE hSLC;
-PLATFORM_DWORD TermSrvBase;
-FILE_VERSION FV;
+PLATFORM_DWORD TermSrvBase = 0;
+FILE_VERSION FV{};
 SERVICEMAIN _ServiceMain;
 SVCHOSTPUSHSERVICEGLOBALS _SvchostPushServiceGlobals;
 bool AlreadyHooked = false;
 
+void WriteToLog(LPSTR Text)
+{
+    DWORD dwBytesOfWritten;
+    HANDLE hFile = CreateFile(LogFile, GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) return;
+
+    SetFilePointer(hFile, 0, 0, FILE_END);
+    size_t textSize = strlen(Text);
+    WriteFile(hFile, Text, static_cast<DWORD>(textSize), &dwBytesOfWritten, NULL);
+    CloseHandle(hFile);
+}
 DWORD INIReadDWordHex(INI_FILE *IniFile, char *Sect, char *VariableName, PLATFORM_DWORD Default)
 {
 	INI_VAR_DWORD Variable;
 
 	if(IniFile->GetVariableInSection(Sect, VariableName, &Variable))
 	{
-		return Variable.ValueHex;
+		if (Variable.ValueHex <= UINT_MAX) {
+        	return (DWORD)Variable.ValueHex;
+    	} else {
+			WriteToLog("[ERROR] ValueHex is too big");
+    }
+		//return Variable.ValueHex;
 	}
-	return Default;
+	return (DWORD)Default;
 }
 
 void INIReadString(INI_FILE *IniFile, char *Sect, char *VariableName, char *Default, char *Ret, DWORD RetSize)
@@ -89,6 +105,18 @@ void INIReadString(INI_FILE *IniFile, char *Sect, char *VariableName, char *Defa
 	}
 	strcpy_s(Ret, RetSize, Variable.Value);
 }
+/*
+void WriteToLog(LPSTR Text)
+{
+    DWORD dwBytesOfWritten;
+    HANDLE hFile = CreateFile(LogFile, GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) return;
+
+    SetFilePointer(hFile, 0, 0, FILE_END);
+    size_t textSize = strlen(Text);
+    WriteFile(hFile, Text, static_cast<DWORD>(textSize), &dwBytesOfWritten, NULL);
+    CloseHandle(hFile);
+}
 
 void WriteToLog(LPSTR Text)
 {
@@ -101,7 +129,7 @@ void WriteToLog(LPSTR Text)
 	WriteFile(hFile, Text, strlen(Text), &dwBytesOfWritten, NULL);
 	CloseHandle(hFile);
 }
-
+*/
 HMODULE GetCurrentModule()
 {
 	HMODULE hModule = NULL;
@@ -142,7 +170,7 @@ bool GetModuleCodeSectionInfo(HMODULE hModule, PLATFORM_DWORD *BaseAddr, PLATFOR
 	if (*BaseAddr <= 0 || *BaseSize <= 0) return false;
 	return true;
 }
-
+/*
 void SetThreadsState(bool Resume)
 {
 	HANDLE h, hThread;
@@ -174,6 +202,141 @@ void SetThreadsState(bool Resume)
 	}
 }
 
+
+void SetThreadsState(bool resume)
+{
+    HANDLE hSnapshot;
+    HANDLE hThread;
+    DWORD currentThreadId = GetCurrentThreadId();
+    DWORD currentProcessId = GetCurrentProcessId();
+    THREADENTRY32 threadEntry = {0};
+    threadEntry.dwSize = sizeof(threadEntry);
+
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE)
+    {
+        WriteToLog("CreateToolhelp32Snapshot failed\r\n");
+
+    }
+
+    if (Thread32First(hSnapshot, &threadEntry))
+    {
+        do
+        {
+            if (threadEntry.th32ThreadID != currentThreadId && threadEntry.th32OwnerProcessID == currentProcessId)
+            {
+                hThread = OpenThread(THREAD_SUSPEND_RESUME, FALSE, threadEntry.th32ThreadID);
+                if (hThread != NULL)
+                {
+                    if (resume)
+                    {
+                        if (!ResumeThread(hThread))
+                        {
+                            WriteToLog("ResumeThread failed\r\n");
+                        }
+                    }
+                    else
+                    {
+                        if (!SuspendThread(hThread))
+                        {
+                            WriteToLog("SuspendThread failed\r\n");
+                        }
+                    }
+
+                    CloseHandle(hThread);
+                }
+                else
+                {
+                    WriteToLog("OpenThread failed\r\n");
+                }
+            }
+        } while (Thread32Next(hSnapshot, &threadEntry));
+    }
+    if (hSnapshot != NULL)
+	{
+	    CloseHandle(hSnapshot);
+	}
+    else 
+    {
+        WriteToLog("CloseHandle failed\r\n");
+    }
+}
+
+void SetThreadsState(bool resume)
+{
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE)
+    {
+        // Handle error
+        return;
+    }
+
+	THREADENTRY32 thread{};
+    thread.dwSize = sizeof(THREADENTRY32);
+
+    if (!Thread32First(hSnapshot, &thread))
+    {
+        // Handle error
+        CloseHandle(hSnapshot);
+        return;
+    }
+
+    DWORD currentThreadId = GetCurrentThreadId();
+    DWORD currentProcessId = GetCurrentProcessId();
+
+    do
+    {
+        if (thread.th32ThreadID != currentThreadId && thread.th32OwnerProcessID == currentProcessId)
+        {
+            HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, false, thread.th32ThreadID);
+            if (hThread != INVALID_HANDLE_VALUE)
+            {
+                if (resume)
+                {
+                    ResumeThread(hThread);
+                }
+                else
+                {
+                    SuspendThread(hThread);
+                }
+                CloseHandle(hThread);
+            }
+        }
+    } while (Thread32Next(hSnapshot, &thread));
+
+    CloseHandle(hSnapshot);
+}
+*/
+void SetThreadsState(bool Resume)
+{
+	HANDLE h, hThread;
+	DWORD CurrTh, CurrPr;
+	THREADENTRY32 Thread{};
+
+	CurrTh = GetCurrentThreadId();
+	CurrPr = GetCurrentProcessId();
+
+	h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (h != INVALID_HANDLE_VALUE)
+	{
+		Thread.dwSize = sizeof(THREADENTRY32);
+		Thread32First(h, &Thread);
+		do
+		{
+			if (Thread.th32ThreadID != CurrTh && Thread.th32OwnerProcessID == CurrPr)
+			{
+				hThread = OpenThread(THREAD_SUSPEND_RESUME, false, Thread.th32ThreadID);
+				if (hThread != NULL && hThread != INVALID_HANDLE_VALUE)
+				{
+					if (Resume)		ResumeThread(hThread);
+					else			SuspendThread(hThread);
+					CloseHandle(hThread);
+				}
+			}
+		} while (Thread32Next(h, &Thread));
+		CloseHandle(h);
+	}
+}
 BOOL __stdcall GetModuleVersion(LPCWSTR lptstrModuleName, FILE_VERSION *FileVersion)
 {
 	typedef struct
@@ -259,7 +422,7 @@ bool OverrideSL(LPWSTR ValueName, DWORD *Value)
 	if (IniFile->VariableExists(L"SLPolicy", ValueName))
 	{
 		if (!(IniFile->GetVariableInSection(L"SLPolicy", ValueName, &Variable))) *Value = 0;
-		else *Value = Variable.ValueDec;
+		else *Value = (DWORD)Variable.ValueDec;
 		return true;
 	}
 	return false;
@@ -506,11 +669,11 @@ void Hook()
 	WriteToLog("Loading configuration...\r\n");
 
 	GetModuleFileName(GetCurrentModule(), ConfigFile, 255);
-	for (DWORD i = wcslen(ConfigFile); i > 0; i--)
+	for (size_t i = wcslen(ConfigFile); i > 0; i--)
 	{
 		if (ConfigFile[i] == '\\')
 		{
-			memset(&ConfigFile[i + 1], 0x00, ((256 - (i + 1))) * 2);
+			memset(&ConfigFile[i + 1], 0x00, ((256 - (static_cast<size_t>(i) + 1))) * 2);
 			memcpy(&ConfigFile[i + 1], L"rdpwrap.ini", strlen("rdpwrap.ini") * 2);
 			break;
 		}
@@ -534,11 +697,11 @@ void Hook()
 	if(!(IniFile->GetVariableInSection("Main", "LogFile", &LogFileVar)))
 	{
 		GetModuleFileName(GetCurrentModule(), LogFile, 255);
-		for(DWORD i = wcslen(LogFile); i > 0; i--)
+		for(size_t i = wcslen(LogFile); i > 0; i--)
 		{
 			if(LogFile[i] == '\\')
 			{
-				memset(&LogFile[i+1], 0x00, ((256-(i+1)))*2);
+				memset(&LogFile[i + 1], 0x00, ((256 - (static_cast<size_t>(i) + 1))) * 2);
 				memcpy(&LogFile[i+1], L"rdpwrap.txt", strlen("rdpwrap.txt")*2);
 				break;
 			}
@@ -556,7 +719,7 @@ void Hook()
 	SIZE_T bw;
 	WORD Ver = 0;
 	PLATFORM_DWORD TermSrvSize, SignPtr;
-	FARJMP Jump;
+	FARJMP Jump{};
 
 	WriteToLog("Initializing RDP Wrapper...\r\n");
 
