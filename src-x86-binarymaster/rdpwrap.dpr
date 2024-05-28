@@ -1,5 +1,5 @@
 {
-  Copyright 2014 Stas'M Corp.
+  Copyright 2024 bobo.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ library rdpwrap;
 uses
   SysUtils,
   Windows,
+  IOUtils,
   TlHelp32,
   LiteINI;
 
@@ -110,17 +111,11 @@ var
 
 // Main code
 
-procedure WriteLog(S: AnsiString);
-var
-  F: TextFile;
+procedure WriteLog(const S: string);
 begin
-  if not FileExists(LogFile) then
-    Exit;
-  AssignFile(F, LogFile);
-  Append(F);
-  Write(F, S+#13#10);
-  CloseFile(F);
+  TFile.AppendAllText(LogFile, S + sLineBreak, TEncoding.UTF8);
 end;
+
 
 function GetModuleHandleEx(dwFlags: DWORD; lpModuleName: PWideChar;
   var phModule: HMODULE): BOOL; stdcall; external kernel32 name 'GetModuleHandleExW';

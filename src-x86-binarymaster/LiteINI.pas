@@ -1,5 +1,5 @@
 {
-  Copyright 2014 Stas'M Corp.
+  Copyright 2024 bobo.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,356 +19,247 @@ unit LiteINI;
 interface
 
 uses
-  SysUtils;
+  SysUtils, Classes;
 
 type
-  SList = Array of String;
+  SList = TArray<String>;
   INIValue = record
     Name: String;
     Value: String;
   end;
   INISection = record
     Name: String;
-    Values: Array of INIValue;
+    Values: TArray<INIValue>;
   end;
-  INIFile = Array of INISection;
+  INIFile = TArray<INISection>;
 
 procedure SListClear(var List: SList);
-function SListAppend(var List: SList; S: String): Integer;
-function SListFind(List: SList; Value: String): Integer;
-function INIFindSection(INI: INIFile; Section: String): Integer;
-function INIFindValue(INI: INIFile; Section: Integer; Value: String): Integer;
-function INIAddSection(var INI: INIFile; Section: String): Integer;
-function INIAddValue(var INI: INIFile; Section: Integer; ValueName, Value: String): Integer;
+function SListAppend(var List: SList; const S: String): Integer;
+function SListFind(const List: SList; const Value: String): Integer;
+function INIFindSection(const INI: INIFile; const Section: String): Integer;
+function INIFindValue(const INI: INIFile; Section: Integer; const Value: String): Integer;
+function INIAddSection(var INI: INIFile; const Section: String): Integer;
+function INIAddValue(var INI: INIFile; Section: Integer; const ValueName, Value: String): Integer;
 procedure INIUnload(var INI: INIFile);
-procedure INILoad(var INI: INIFile; FileName: String);
-function INISectionExists(INI: INIFile; Section: String): Boolean;
-function INIValueExists(INI: INIFile; Section: String; Value: String): Boolean;
-function INIReadSectionLowAPI(INI: INIFile; Section: Integer; var List: SList): Boolean;
-function INIReadSection(INI: INIFile; Section: String): SList;
-function INIReadStringLowAPI(INI: INIFile; Section, Value: Integer; var Str: String): Boolean;
-function INIReadString(INI: INIFile; Section, Value, Default: String): String;
-function INIReadInt(INI: INIFile; Section, Value: String; Default: Integer): Integer;
-function INIReadDWord(INI: INIFile; Section, Value: String; Default: Cardinal): Cardinal;
-function INIReadIntHex(INI: INIFile; Section, Value: String; Default: Integer): Integer;
-function INIReadDWordHex(INI: INIFile; Section, Value: String; Default: Cardinal): Cardinal;
-function INIReadBool(INI: INIFile; Section, Value: String; Default: Boolean): Boolean;
-function INIReadBytes(INI: INIFile; Section, Value: String): TBytes;
-function INIReadBytesDef(INI: INIFile; Section, Value: String; Default: TBytes): TBytes;
+procedure INILoad(var INI: INIFile; const FileName: String);
+function INISectionExists(const INI: INIFile; const Section: String): Boolean;
+function INIValueExists(const INI: INIFile; const Section, Value: String): Boolean;
+function INIReadSection(const INI: INIFile; const Section: String): SList;
+function INIReadString(const INI: INIFile; const Section, Value, Default: String): String;
+function INIReadInt(const INI: INIFile; const Section, Value: String; Default: Integer): Integer;
+function INIReadDWord(const INI: INIFile; const Section, Value: String; Default: Cardinal): Cardinal;
+function INIReadIntHex(const INI: INIFile; const Section, Value: String; Default: Integer): Integer;
+function INIReadDWordHex(const INI: INIFile; const Section, Value: String; Default: Cardinal): Cardinal;
+function INIReadBool(const INI: INIFile; const Section, Value: String; Default: Boolean): Boolean;
+function INIReadBytes(const INI: INIFile; const Section, Value: String): TBytes;
+function INIReadBytesDef(const INI: INIFile; const Section, Value: String; const Default: TBytes): TBytes;
 
 implementation
 
 procedure SListClear(var List: SList);
 begin
-  SetLength(List, 0);
+  List := [];
 end;
 
-function SListAppend(var List: SList; S: String): Integer;
+function SListAppend(var List: SList; const S: String): Integer;
 begin
-  SetLength(List, Length(List) + 1);
-  List[Length(List) - 1] := S;
-  Result := Length(List) - 1;
+  Result := Length(List);
+  SetLength(List, Result + 1);
+  List[Result] := S;
 end;
 
-function SListFind(List: SList; Value: String): Integer;
-var
-  I: Integer;
+function SListFind(const List: SList; const Value: String): Integer;
 begin
-  Result := -1;
-  for I := 0 to Length(List) - 1 do
-    if List[I] = Value then begin
-      Result := I;
-      Break;
-    end;
-end;
-
-function INIFindSection(INI: INIFile; Section: String): Integer;
-var
-  I: Integer;
-begin
-  Result := -1;
-  for I := 0 to Length(INI) - 1 do
-    if INI[I].Name = Section then begin
-      Result := I;
+  for Result := 0 to High(List) do
+    if List[Result] = Value then
       Exit;
-    end;
+  Result := -1;
 end;
 
-function INIFindValue(INI: INIFile; Section: Integer; Value: String): Integer;
-var
-  I: Integer;
+function INIFindSection(const INI: INIFile; const Section: String): Integer;
 begin
+  for Result := 0 to High(INI) do
+    if INI[Result].Name = Section then
+      Exit;
   Result := -1;
+end;
+
+function INIFindValue(const INI: INIFile; Section: Integer; const Value: String): Integer;
+begin
   if (Section < 0) or (Section >= Length(INI)) then
-    Exit;
-  for I := 0 to Length(INI[Section].Values) - 1 do
-    if INI[Section].Values[I].Name = Value then begin
-      Result := I;
+    Exit(-1);
+  for Result := 0 to High(INI[Section].Values) do
+    if INI[Section].Values[Result].Name = Value then
       Exit;
-    end;
+  Result := -1;
 end;
 
-function INIAddSection(var INI: INIFile; Section: String): Integer;
+function INIAddSection(var INI: INIFile; const Section: String): Integer;
 begin
   Result := INIFindSection(INI, Section);
-  if Result >= 0 then
-    Exit;
-  Result := Length(INI);
-  SetLength(INI, Result + 1);
-  INI[Result].Name := Section;
-  SetLength(INI[Result].Values, 0);
+  if Result = -1 then
+  begin
+    Result := Length(INI);
+    SetLength(INI, Result + 1);
+    INI[Result].Name := Section;
+    INI[Result].Values := [];
+  end;
 end;
 
-function INIAddValue(var INI: INIFile; Section: Integer; ValueName, Value: String): Integer;
-var
-  I: Integer;
+function INIAddValue(var INI: INIFile; Section: Integer; const ValueName, Value: String): Integer;
 begin
-  Result := -1;
   if (Section < 0) or (Section >= Length(INI)) then
-    Exit;
-  I := INIFindValue(INI, Section, ValueName);
-  if I = -1 then begin
+    Exit(-1);
+  Result := INIFindValue(INI, Section, ValueName);
+  if Result = -1 then
+  begin
     Result := Length(INI[Section].Values);
     SetLength(INI[Section].Values, Result + 1);
     INI[Section].Values[Result].Name := ValueName;
-    INI[Section].Values[Result].Value := Value;
-  end else begin
-    INI[Section].Values[I].Value := Value;
-    Result := I;
   end;
+  INI[Section].Values[Result].Value := Value;
 end;
 
 procedure INIUnload(var INI: INIFile);
 begin
-  SetLength(INI, 0);
+  INI := [];
 end;
 
-procedure INILoad(var INI: INIFile; FileName: String);
+procedure INILoad(var INI: INIFile; const FileName: String);
 var
-  F: TextFile;
-  S, ValueName, Value: String;
-  INIList: SList;
-  I, Sect: Integer;
+  Lines: TStringList;
+  Line, S, ValueName, Value: String;
+  Sect: Integer;
 begin
   INIUnload(INI);
   if not FileExists(FileName) then
     Exit;
-  AssignFile(F, FileName);
-  Reset(F);
-  // Read and filter lines
-  while not EOF(F) do begin
-    Readln(F, S);
-    if (Pos(';', S) <> 1)
-    and (Pos('#', S) <> 1)
-    and (
-      ((Pos('[', S) > 0) and (Pos(']', S) > 0)) or
-      (Pos('=', S) > 0)
-    )
-    then
-      SListAppend(INIList, S);
-  end;
-  CloseFile(F);
-  // Parse 2 (parse format)
-  Sect := -1;
-  for I := 0 to Length(INIList) - 1 do begin
-    S := Trim(INIList[I]);
-    if Length(S) >= 2 then
-      if (S[1] = '[') and (S[Length(S)] = ']') then begin
-        S := Trim(Copy(S, 2, Length(S) - 2));
+
+  Lines := TStringList.Create;
+  try
+    Lines.LoadFromFile(FileName);
+
+    Sect := -1;
+    for Line in Lines do
+    begin
+      S := Trim(Line);
+      if (S = '') or CharInSet(S[1], [';', '#']) then
+        Continue;
+      if (S[1] = '[') and (S[High(S)] = ']') then
+      begin
+        S := Copy(S, 2, Length(S) - 2);
         Sect := INIAddSection(INI, S);
         Continue;
       end;
-    S := INIList[I];
-    if Pos('=', S) > 0 then begin
-      ValueName := Trim(Copy(S, 1, Pos('=', S) - 1));
-      Value := Copy(S, Pos('=', S) + 1, Length(S) - Pos('=', S));
-      if Sect = -1 then
-        Sect := INIAddSection(INI, '');
-      INIAddValue(INI, Sect, ValueName, Value);
+      if Pos('=', S) > 0 then
+      begin
+        ValueName := Trim(Copy(S, 1, Pos('=', S) - 1));
+        Value := Trim(Copy(S, Pos('=', S) + 1, Length(S)));
+        if Sect = -1 then
+          Sect := INIAddSection(INI, '');
+        INIAddValue(INI, Sect, ValueName, Value);
+      end;
     end;
+  finally
+    Lines.Free;
   end;
 end;
 
-function INISectionExists(INI: INIFile; Section: String): Boolean;
+function INISectionExists(const INI: INIFile; const Section: String): Boolean;
 begin
   Result := INIFindSection(INI, Section) > -1;
 end;
 
-function INIValueExists(INI: INIFile; Section: String; Value: String): Boolean;
+function INIValueExists(const INI: INIFile; const Section, Value: String): Boolean;
+begin
+  Result := INIFindValue(INI, INIFindSection(INI, Section), Value) > -1;
+end;
+
+function INIReadSection(const INI: INIFile; const Section: String): SList;
 var
   Sect: Integer;
 begin
   Sect := INIFindSection(INI, Section);
-  Result := INIFindValue(INI, Sect, Value) > -1;
+  if Sect <> -1 then
+  begin
+    Result := [];
+    for var Value in INI[Sect].Values do
+      SListAppend(Result, Value.Name);
+  end
+  else
+    Result := [];
 end;
 
-function INIReadSectionLowAPI(INI: INIFile; Section: Integer; var List: SList): Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  SetLength(List, 0);
-  if (Section < 0) or (Section >= Length(INI)) then
-    Exit;
-  for I := 0 to Length(INI[Section].Values) - 1 do
-    SListAppend(List, INI[Section].Values[I].Name);
-  Result := True;
-end;
-
-function INIReadSection(INI: INIFile; Section: String): SList;
-var
-  Sect: Integer;
-begin
-  Sect := INIFindSection(INI, Section);
-  INIReadSectionLowAPI(INI, Sect, Result);
-end;
-
-function INIReadStringLowAPI(INI: INIFile; Section, Value: Integer; var Str: String): Boolean;
-begin
-  Result := False;
-  if (Section < 0) or (Section >= Length(INI)) then
-    Exit;
-  if (Value < 0) or (Value >= Length(INI[Section].Values)) then
-    Exit;
-  Str := INI[Section].Values[Value].Value;
-  Result := True;
-end;
-
-function INIReadString(INI: INIFile; Section, Value, Default: String): String;
+function INIReadString(const INI: INIFile; const Section, Value, Default: String): String;
 var
   Sect, Val: Integer;
 begin
   Sect := INIFindSection(INI, Section);
   Val := INIFindValue(INI, Sect, Value);
-  if not INIReadStringLowAPI(INI, Sect, Val, Result) then
-    Result := Default;
-end;
-
-function INIReadInt(INI: INIFile; Section, Value: String; Default: Integer): Integer;
-var
-  S: String;
-  E: Integer;
-begin
-  S := INIReadString(INI, Section, Value, '');
-  Val(S, Result, E);
-  if E <> 0 then
-    Result := Default;
-end;
-
-function INIReadDWord(INI: INIFile; Section, Value: String; Default: Cardinal): Cardinal;
-var
-  S: String;
-  E: Integer;
-begin
-  S := INIReadString(INI, Section, Value, '');
-  Val(S, Result, E);
-  if E <> 0 then
-    Result := Default;
-end;
-
-function INIReadIntHex(INI: INIFile; Section, Value: String; Default: Integer): Integer;
-var
-  S: String;
-  E: Integer;
-begin
-  S := INIReadString(INI, Section, Value, '');
-  Val('$'+S, Result, E);
-  if E <> 0 then
-    Result := Default;
-end;
-
-function INIReadDWordHex(INI: INIFile; Section, Value: String; Default: Cardinal): Cardinal;
-var
-  S: String;
-  E: Integer;
-begin
-  S := INIReadString(INI, Section, Value, '');
-  Val('$'+S, Result, E);
-  if E <> 0 then
-    Result := Default;
-end;
-
-function INIReadBool(INI: INIFile; Section, Value: String; Default: Boolean): Boolean;
-var
-  S: String;
-  I: Cardinal;
-  E: Integer;
-begin
-  S := INIReadString(INI, Section, Value, '');
-  Val(S, I, E);
-  if E <> 0 then
-    Result := Default
+  if (Sect <> -1) and (Val <> -1) then
+    Result := INI[Sect].Values[Val].Value
   else
-    Result := I > 0;
+    Result := Default;
 end;
 
-function StringToBytes(S: String; var B: TBytes): Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  if Odd(Length(S)) then
-    Exit;
-  SetLength(B, Length(S) div 2);
-  for I := 0 to Length(B) - 1 do begin
-    B[I] := 0;
-    case S[(I*2)+2] of
-      '0': ;
-      '1': B[I] := B[I] or $1;
-      '2': B[I] := B[I] or $2;
-      '3': B[I] := B[I] or $3;
-      '4': B[I] := B[I] or $4;
-      '5': B[I] := B[I] or $5;
-      '6': B[I] := B[I] or $6;
-      '7': B[I] := B[I] or $7;
-      '8': B[I] := B[I] or $8;
-      '9': B[I] := B[I] or $9;
-      'A','a': B[I] := B[I] or $A;
-      'B','b': B[I] := B[I] or $B;
-      'C','c': B[I] := B[I] or $C;
-      'D','d': B[I] := B[I] or $D;
-      'E','e': B[I] := B[I] or $E;
-      'F','f': B[I] := B[I] or $F;
-      else Exit;
-    end;
-    case S[(I*2)+1] of
-      '0': ;
-      '1': B[I] := B[I] or $10;
-      '2': B[I] := B[I] or $20;
-      '3': B[I] := B[I] or $30;
-      '4': B[I] := B[I] or $40;
-      '5': B[I] := B[I] or $50;
-      '6': B[I] := B[I] or $60;
-      '7': B[I] := B[I] or $70;
-      '8': B[I] := B[I] or $80;
-      '9': B[I] := B[I] or $90;
-      'A','a': B[I] := B[I] or $A0;
-      'B','b': B[I] := B[I] or $B0;
-      'C','c': B[I] := B[I] or $C0;
-      'D','d': B[I] := B[I] or $D0;
-      'E','e': B[I] := B[I] or $E0;
-      'F','f': B[I] := B[I] or $F0;
-      else Exit;
-    end;
-  end;
-  Result := True;
-end;
-
-function INIReadBytes(INI: INIFile; Section, Value: String): TBytes;
+function INIReadInt(const INI: INIFile; const Section, Value: String; Default: Integer): Integer;
 var
   S: String;
 begin
   S := INIReadString(INI, Section, Value, '');
-  if not StringToBytes(S, Result) then
-    SetLength(Result, 0);
+  Result := StrToIntDef(S, Default);
 end;
 
-function INIReadBytesDef(INI: INIFile; Section, Value: String; Default: TBytes): TBytes;
+function INIReadDWord(const INI: INIFile; const Section, Value: String; Default: Cardinal): Cardinal;
 var
   S: String;
 begin
   S := INIReadString(INI, Section, Value, '');
-  if not StringToBytes(S, Result) then
+  Result := StrToIntDef(S, Default);
+end;
+
+function INIReadIntHex(const INI: INIFile; const Section, Value: String; Default: Integer): Integer;
+var
+  S: String;
+begin
+  S := INIReadString(INI, Section, Value, '');
+  if not TryStrToInt('$' + S, Result) then
+    Result := Default;
+end;
+
+function INIReadDWordHex(const INI: INIFile; const Section, Value: String; Default: Cardinal): Cardinal;
+var
+  S: String;
+begin
+  S := INIReadString(INI, Section, Value, '');
+  if not TryStrToUInt('$' + S, Result) then
+    Result := Default;
+end;
+
+function INIReadBool(const INI: INIFile; const Section, Value: String; Default: Boolean): Boolean;
+var
+  S: String;
+begin
+  S := INIReadString(INI, Section, Value, '');
+  Result := StrToBoolDef(S, Default);
+end;
+
+function INIReadBytes(const INI: INIFile; const Section, Value: String): TBytes;
+var
+  S: String;
+  Len: Integer;
+begin
+  S := INIReadString(INI, Section, Value, '');
+  Len := Length(S) div 2;
+  SetLength(Result, Len);
+  for var I := 0 to Len - 1 do
+    Result[I] := StrToInt('$' + Copy(S, I * 2 + 1, 2));
+end;
+
+function INIReadBytesDef(const INI: INIFile; const Section, Value: String; const Default: TBytes): TBytes;
+begin
+  Result := INIReadBytes(INI, Section, Value);
+  if Length(Result) = 0 then
     Result := Default;
 end;
 
