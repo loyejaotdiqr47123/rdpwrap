@@ -1,5 +1,5 @@
 {
-  Copyright 2024 bobo.
+  Copyright 2014 Stas'M Corp.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -724,6 +724,7 @@ end;
 // export section
 
 exports
+  {$WARN SYMBOL_PLATFORM OFF}
   TermServiceMain index 1 name 'ServiceMain',
   TermServiceGlobals index 2 name 'SvchostPushServiceGlobals';
 
