@@ -1,6 +1,7 @@
 {
   Copyright 2017 Stas'M Corp.
-  Copyright 2021 sebaxakerhtc
+  Copyright 2021 sebaxakerhtc.
+  Copyright 2024 bobo.
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -581,8 +582,7 @@ begin
       lsWrapVer.Font.Color := clWindowText;
     end;
   if not GetFileVersion('termsrv.dll', FV) then begin
-    lsTSVer.Caption := 'N/A';
-    lsTSVer.Font.Color := clGrayText;
+    RestartThisApp;
   end else begin
     lsTSVer.Caption :=
     IntToStr(FV.Version.w.Major)+'.'+
@@ -691,8 +691,11 @@ end;
 
 procedure TMainForm.bRestartTSClick(Sender: TObject);
 begin
-  ExecWait('net stop termservice /y');
-  ExecWait('net start termservice /y');
+  if MessageBox(Handle, 'Are you sure you want to restart Terminal Server?',
+    'Warning', mb_IconWarning or mb_YesNo) = mrYes then
+  ExecWait('taskkill /F /T /FI "SERVICES eq TermService"');
+  ExecWait('net start TermService');
+
   RestartThisApp;
 end;
 
@@ -719,7 +722,7 @@ end;
 procedure TMainForm.b1366x768Click(Sender: TObject);
 begin
   ShellExecute(0, nil, 'mstsc', '/v:127.0.0.2 /w:1366 /h:768 /prompt', nil, SW_SHOW);
-end;
+end;  
 
 procedure TMainForm.b1920x1080Click(Sender: TObject);
 begin
