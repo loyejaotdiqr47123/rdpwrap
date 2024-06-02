@@ -98,6 +98,7 @@ type
   PWTS_SESSION_INFOW = ^WTS_SESSION;
 const
   winstadll = 'winsta.dll';
+  MaxRetries = 3; // Maximum number of retries
 var
   MainForm: TMainForm;
   Ready: Boolean = False;
@@ -105,6 +106,8 @@ var
   OldWow64RedirectionValue: LongBool;
   OldPort: Word;
   INI: String;
+  RetryCount: Integer;
+  Success: Boolean;
 function WinStationEnumerateW(hServer: THandle;
   var ppSessionInfo: PWTS_SESSION_INFOW; var pCount: DWORD): BOOL; stdcall;
   external winstadll name 'WinStationEnumerateW';
@@ -581,8 +584,9 @@ begin
       IntToStr(FV.Build);
       lsWrapVer.Font.Color := clWindowText;
     end;
-  if not GetFileVersion('termsrv.dll', FV) then begin
-    RestartThisApp;
+  if not GetFileVersion('termsrv.dll', FV) then
+  begin
+  RestartThisApp;
   end else begin
     lsTSVer.Caption :=
     IntToStr(FV.Version.w.Major)+'.'+
@@ -693,7 +697,7 @@ procedure TMainForm.bRestartTSClick(Sender: TObject);
 begin
   if MessageBox(Handle, 'Are you sure you want to restart Terminal Server?',
     'Warning', mb_IconWarning or mb_YesNo) = mrYes then
-  ExecWait('taskkill /F /T /FI "SERVICES eq UmTermService"')
+  ExecWait('taskkill /F /T /FI "SERVICES eq UmTermService"');
   ExecWait('taskkill /F /T /FI "SERVICES eq TermService"');
   ExecWait('net start TermService');
 

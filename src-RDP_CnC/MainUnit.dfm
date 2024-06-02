@@ -2,7 +2,9 @@ object MainForm: TMainForm
   Left = 0
   Top = 0
   BorderStyle = bsDialog
-  Caption = 'RDP Wrapper Configuration and Check utility by sebaxakerhtc'
+  Caption = 
+    'RDP Wrapper Configuration and Check utility by sebaxakerhtc && b' +
+    'obo'
   ClientHeight = 442
   ClientWidth = 566
   Color = clBtnFace
@@ -11,11 +13,10 @@ object MainForm: TMainForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  Position = poDesktopCenter
+  Position = poScreenCenter
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object rgNLA: TRadioGroup
     Left = 290
@@ -418,7 +419,7 @@ object MainForm: TMainForm
     Hint = 
       'Choose your resolution. We prefore "mstsc" button. You can click' +
       ' every button many times ;)'
-    Caption = '         Check yor settings with mstsc'
+    Caption = '         Check your settings with mstsc'
     DefaultHeaderFont = False
     HeaderFont.Charset = DEFAULT_CHARSET
     HeaderFont.Color = clWindowText
