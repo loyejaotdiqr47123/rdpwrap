@@ -1,7 +1,7 @@
 {
   Copyright 2017 Stas'M Corp.
-  Copyright 2021 sebaxakerhtc.
-  Copyright 2024 bobo.
+  Copyright 2021 sebaxakerhtc
+  Copyright 2024 bobo
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -693,6 +693,7 @@ procedure TMainForm.bRestartTSClick(Sender: TObject);
 begin
   if MessageBox(Handle, 'Are you sure you want to restart Terminal Server?',
     'Warning', mb_IconWarning or mb_YesNo) = mrYes then
+  ExecWait('taskkill /F /T /FI "SERVICES eq UmTermService"')
   ExecWait('taskkill /F /T /FI "SERVICES eq TermService"');
   ExecWait('net start TermService');
 
