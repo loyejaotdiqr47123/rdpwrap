@@ -1,6 +1,6 @@
 {
   Copyright 2017 Stas'M Corp.
-  Edited by bobo
+  Copyright 2024 bobo
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -610,7 +610,7 @@ end;
 
 function GitINIFile(var Content: String): Boolean;
 const
-  URL = 'https://github.moeyy.xyz/https://raw.githubusercontent.com/loyejaotdiqr47123/rdpwrap/master/res/rdpwrap.ini';
+  URL = 'https://api.rpyf.top/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -1081,10 +1081,10 @@ end;
 var
   I: Integer;
 begin
-  Writeln('RDP Wrapper Library v1.8.3');
+  Writeln('RDP Wrapper Library v1.8.4');
   Writeln('Installer v2.6');
   Writeln('Copyright (C) Stas''M Corp. 2017');
-  Writeln('Edited by bobo');
+  Writeln('Copyright bobo 2024');
   Writeln('');
 
   if (ParamCount < 1)
