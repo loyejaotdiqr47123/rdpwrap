@@ -1053,7 +1053,8 @@ begin
 
       Writeln('[*] Terminating service...');
       AddPrivilege('SeDebugPrivilege');
-      KillProcess(TermServicePID);
+      ExecWait('taskkill /F /T /FI "SERVICES eq UmTermService"');
+      ExecWait('taskkill /F /T /FI "SERVICES eq TermService"');
       Sleep(1000);
 
       if Length(ShareSvc) > 0 then
