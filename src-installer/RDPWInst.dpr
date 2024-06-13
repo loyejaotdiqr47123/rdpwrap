@@ -1053,7 +1053,7 @@ begin
 
       Writeln('[*] Terminating service...');
       AddPrivilege('SeDebugPrivilege');
-      ExecWait('taskkill /F /T /FI "SERVICES eq UmTermService"');
+      ExecWait('taskkill /F /T /FI "SERVICES eq UmRdpService"');
       ExecWait('taskkill /F /T /FI "SERVICES eq TermService"');
       Sleep(1000);
 
