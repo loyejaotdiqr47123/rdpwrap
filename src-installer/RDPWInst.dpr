@@ -991,35 +991,52 @@ function CheckINIDate(Filename, Content: String; var Date: Integer): Boolean;
 var
   Str: TStringList;
   I: Integer;
+  Line: String;
 begin
   Result := False;
   Str := TStringList.Create;
-  if Filename <> '' then begin
-    try
-      Str.LoadFromFile(Filename);
-    except
-      Writeln('[-] Failed to read INI file.');
+  try
+    if Filename <> '' then
+    begin
+      try
+        Str.LoadFromFile(Filename);
+      except
+        Writeln('[-] Failed to read INI file.');
+        Exit;
+      end;
+    end
+    else
+      Str.Text := Content;
+
+    for I := 0 to Str.Count - 1 do
+    begin
+      if Pos('Updated=', Str[I]) = 1 then
+      begin
+        Line := Str[I];
+        Break;
+      end;
+    end;
+
+    if I >= Str.Count then
+    begin
+      Writeln('[-] Failed to check INI date.');
       Exit;
     end;
-  end else
-    Str.Text := Content;
-  for I := 0 to Str.Count - 1 do
-    if Pos('Updated=', Str[I]) = 1 then
-      Break;
-  if I >= Str.Count then begin
-    Writeln('[-] Failed to check INI date.');
-    Exit;
+
+    Line := StringReplace(Line, 'Updated=', '', []);
+    Line := StringReplace(Line, '-', '', [rfReplaceAll]);
+
+    try
+      Date := StrToInt(Line);
+    except
+      Writeln('[-] Wrong INI date format.');
+      Exit;
+    end;
+
+    Result := True;
+  finally
+    Str.Free;
   end;
-  Content := StringReplace(Str[I], 'Updated=', '', []);
-  Content := StringReplace(Content, '-', '', [rfReplaceAll]);
-  Str.Free;
-  try
-    Date := StrToInt(Content);
-  except
-    Writeln('[-] Wrong INI date format.');
-    Exit;
-  end;
-  Result := True;
 end;
 
 procedure CheckUpdate;
