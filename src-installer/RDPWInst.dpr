@@ -89,21 +89,30 @@ var
 
 function SupportedArchitecture: Boolean;
 var
-  SI: TSystemInfo;
+  SystemInfo: TSystemInfo;
 begin
-  GetNativeSystemInfo(SI);
-  case SI.wProcessorArchitecture of
-    0:
+  GetNativeSystemInfo(SystemInfo);
+  case SystemInfo.wProcessorArchitecture of
+    PROCESSOR_ARCHITECTURE_INTEL:
     begin
       Arch := 32;
       Result := True; // Intel x86
     end;
-    6: Result := False; // Itanium-based x64
-    9: begin
+    PROCESSOR_ARCHITECTURE_IA64:
+    begin
+      Arch := 64;
+      Result := False; // Itanium-based x64
+    end;
+    PROCESSOR_ARCHITECTURE_AMD64:
+    begin
       Arch := 64;
       Result := True; // Intel/AMD x64
     end;
-    else Result := False;
+    else
+    begin
+      Arch := 0;
+      Result := False; // Unknown architecture
+    end;
   end;
 end;
 
@@ -441,29 +450,51 @@ var
   tkp: TOKEN_PRIVILEGES;
   ReturnLength: Cardinal;
   ErrorCode: Cardinal;
+
+  procedure ReportError(const Msg: String; ErrorCode: Cardinal);
+  begin
+    Writeln(Format('[-] %s (code %d).', [Msg, ErrorCode]));
+  end;
+
 begin
   Result := False;
-  if not OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES
-  or TOKEN_QUERY, hToken) then begin
+
+  // Open the process token
+  if not OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES or TOKEN_QUERY, hToken) then
+  begin
     ErrorCode := GetLastError;
-    Writeln('[-] OpenProcessToken error (code ' + IntToStr(ErrorCode) + ').');
+    ReportError('OpenProcessToken error', ErrorCode);
     Exit;
   end;
-  if not LookupPrivilegeValue(nil, PWideChar(SePriv), SeNameValue) then begin
-    ErrorCode := GetLastError;
-    Writeln('[-] LookupPrivilegeValue error (code ' + IntToStr(ErrorCode) + ').');
-    Exit;
+
+  try
+    // Lookup the privilege value
+    if not LookupPrivilegeValue(nil, PWideChar(SePriv), SeNameValue) then
+    begin
+      ErrorCode := GetLastError;
+      ReportError('LookupPrivilegeValue error', ErrorCode);
+      Exit;
+    end;
+
+    // Set up the TOKEN_PRIVILEGES structure
+    tkp.PrivilegeCount := 1;
+    tkp.Privileges[0].Luid := SeNameValue;
+    tkp.Privileges[0].Attributes := SE_PRIVILEGE_ENABLED;
+
+    // Adjust the token privileges
+    if not AdjustTokenPrivileges(hToken, False, tkp, SizeOf(tkp), tkp, ReturnLength) then
+    begin
+      ErrorCode := GetLastError;
+      ReportError('AdjustTokenPrivileges error', ErrorCode);
+      Exit;
+    end;
+
+    Result := True;
+  finally
+    CloseHandle(hToken);
   end;
-  tkp.PrivilegeCount := 1;
-  tkp.Privileges[0].Luid := SeNameValue;
-  tkp.Privileges[0].Attributes := SE_PRIVILEGE_ENABLED;
-  if not AdjustTokenPrivileges(hToken, False, tkp, SizeOf(tkp), tkp, ReturnLength) then begin
-    ErrorCode := GetLastError;
-    Writeln('[-] AdjustTokenPrivileges error (code ' + IntToStr(ErrorCode) + ').');
-    Exit;
-  end;
-  Result := True;
 end;
+
 
 procedure KillProcess(PID: DWORD);
 var
@@ -615,27 +646,36 @@ var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
   Str: String;
-  Buf: Array[0..1023] of Byte;
+  Buffer: Array[0..1023] of Byte;
   BytesRead: DWORD;
 begin
   Result := False;
   Content := '';
+
+  // Initialize WinINet
   NetHandle := InternetOpen('RDP Wrapper Update', INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
   if not Assigned(NetHandle) then
     Exit;
+
+  // Open the URL
   UrlHandle := InternetOpenUrl(NetHandle, PChar(URL), nil, 0, INTERNET_FLAG_RELOAD, 0);
   if not Assigned(UrlHandle) then
   begin
     InternetCloseHandle(NetHandle);
     Exit;
   end;
+
+  // Read the data
   repeat
-    InternetReadFile(UrlHandle, @Buf[0], SizeOf(Buf), BytesRead);
-    SetString(Str, PAnsiChar(@Buf[0]), BytesRead);
+    InternetReadFile(UrlHandle, @Buffer[0], SizeOf(Buffer), BytesRead);
+    SetString(Str, PAnsiChar(@Buffer[0]), BytesRead);
     Content := Content + Str;
   until BytesRead = 0;
+
+  // Clean up
   InternetCloseHandle(UrlHandle);
   InternetCloseHandle(NetHandle);
+
   Result := True;
 end;
 
@@ -980,18 +1020,28 @@ begin
 end;
 
 procedure TSConfigFirewall(Enable: Boolean);
+const
+  RuleName = 'Remote Desktop';
+  LocalPort = '3389';
 begin
   if Enable then
-    ExecWait('netsh advfirewall firewall add rule name="Remote Desktop" dir=in protocol=tcp localport=3389 profile=any action=allow')
+  begin
+    ExecWait(Format('netsh advfirewall firewall add rule name="%s" dir=in protocol=tcp localport=%s profile=any action=allow', [RuleName, LocalPort]));
+    ExecWait(Format('netsh advfirewall firewall add rule name="%s" dir=in protocol=udp localport=%s profile=any action=allow', [RuleName, LocalPort]));
+  end
   else
-    ExecWait('netsh advfirewall firewall delete rule name="Remote Desktop"');
+  begin
+    ExecWait(Format('netsh advfirewall firewall delete rule name="%s"', [RuleName]));
+  end;
 end;
+
+
 
 function CheckINIDate(Filename, Content: String; var Date: Integer): Boolean;
 var
   Str: TStringList;
-  I: Integer;
   Line: String;
+  UpdatedPos: Integer;
 begin
   Result := False;
   Str := TStringList.Create;
@@ -1004,40 +1054,33 @@ begin
         Writeln('[-] Failed to read INI file.');
         Exit;
       end;
-    end
-    else
+    end else
       Str.Text := Content;
 
-    for I := 0 to Str.Count - 1 do
+    for Line in Str do
     begin
-      if Pos('Updated=', Str[I]) = 1 then
+      UpdatedPos := Pos('Updated=', Line);
+      if UpdatedPos = 1 then
       begin
-        Line := Str[I];
+        Content := Copy(Line, Length('Updated=') + 1, MaxInt);
+        Content := StringReplace(Content, '-', '', [rfReplaceAll]);
+        try
+          Date := StrToInt(Content);
+          Result := True;
+        except
+          Writeln('[-] Wrong INI date format.');
+        end;
         Break;
       end;
     end;
 
-    if I >= Str.Count then
-    begin
+    if not Result then
       Writeln('[-] Failed to check INI date.');
-      Exit;
-    end;
-
-    Line := StringReplace(Line, 'Updated=', '', []);
-    Line := StringReplace(Line, '-', '', [rfReplaceAll]);
-
-    try
-      Date := StrToInt(Line);
-    except
-      Writeln('[-] Wrong INI date format.');
-      Exit;
-    end;
-
-    Result := True;
   finally
     Str.Free;
   end;
 end;
+
 
 procedure CheckUpdate;
 var
@@ -1070,9 +1113,8 @@ begin
 
       Writeln('[*] Terminating service...');
       AddPrivilege('SeDebugPrivilege');
-      ExecWait('taskkill /F /T /FI "SERVICES eq UmRdpService"');
+      ExecWait('sc config termservice start=disabled');
       ExecWait('taskkill /F /T /FI "SERVICES eq TermService"');
-      Sleep(1000);
 
       if Length(ShareSvc) > 0 then
         for I := 0 to Length(ShareSvc) - 1 do
@@ -1082,10 +1124,15 @@ begin
       Str := TStringList.Create;
       Str.Text := S;
       try
+        Writeln('[*] Saving new INI file to ', INIPath);
         Str.SaveToFile(INIPath);
+        ExecWait('sc config termservice start=auto');
+        Writeln('[+] INI file saved successfully.');
       except
-        Writeln('[-] Failed to write INI file.');
-        Halt(ERROR_ACCESS_DENIED);
+        on E: Exception do begin
+          Writeln('[-] Failed to write INI file: ', E.Message);
+          Halt(ERROR_ACCESS_DENIED);
+        end;
       end;
       Str.Free;
 
