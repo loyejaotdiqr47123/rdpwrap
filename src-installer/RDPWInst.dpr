@@ -30,16 +30,17 @@ uses
 
 function EnumServicesStatusEx(
   hSCManager: SC_HANDLE;
-  InfoLevel,
-  dwServiceType,
+  InfoLevel: DWORD;
+  dwServiceType: DWORD;
   dwServiceState: DWORD;
   lpServices: PByte;
   cbBufSize: DWORD;
-  var pcbBytesNeeded,
-  lpServicesReturned,
-  lpResumeHandle: DWORD;
-  pszGroupName: PWideChar): BOOL; stdcall;
-  external advapi32 name 'EnumServicesStatusExW';
+  var pcbBytesNeeded: DWORD;
+  var lpServicesReturned: DWORD;
+  var lpResumeHandle: DWORD;
+  pszGroupName: PWideChar
+): BOOL; stdcall; external advapi32 name 'EnumServicesStatusExW';
+
 
 type
   FILE_VERSION = record
