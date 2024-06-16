@@ -292,51 +292,51 @@ end;
 procedure SvcStart(SvcName: String);
 var
   hSC: SC_HANDLE;
-  hSvc: THandle;
-  Code: DWORD;
+  hSvc: SC_HANDLE;
+  ServiceStatus: SERVICE_STATUS;
   pch: PWideChar;
-  procedure ExitError(Func: String; ErrorCode: DWORD);
-  begin
-    if hSC > 0 then
-      CloseServiceHandle(hSC);
-    if hSvc > 0 then
-      CloseServiceHandle(hSvc);
-    Writeln('[-] ', Func, ' error (code ', ErrorCode, ').');
-  end;
 begin
-  hSC := 0;
-  hSvc := 0;
   Writeln('[*] Starting ', SvcName, '...');
+
   hSC := OpenSCManager(nil, SERVICES_ACTIVE_DATABASE, SC_MANAGER_CONNECT);
   if hSC = 0 then
   begin
-    ExitError('OpenSCManager', GetLastError);
+    Writeln('[-] OpenSCManager error (code ', GetLastError, ').');
     Exit;
   end;
 
-  hSvc := OpenService(hSC, PWideChar(SvcName), SERVICE_START);
-  if hSvc = 0 then
-  begin
-    ExitError('OpenService', GetLastError);
-    Exit;
-  end;
-
-  pch := nil;
-  if not StartService(hSvc, 0, pch) then begin
-    Code := GetLastError;
-    if Code = 1056 then begin // Service already started
-      Sleep(2000);            // or SCM hasn't registered killed process
-      if not StartService(hSvc, 0, pch) then begin
-        ExitError('StartService', Code);
-        Exit;
-      end;
-    end else begin
-      ExitError('StartService', Code);
+  try
+    hSvc := OpenService(hSC, PWideChar(SvcName), SERVICE_QUERY_STATUS or SERVICE_START);
+    if hSvc = 0 then
+    begin
+      Writeln('[-] OpenService error (code ', GetLastError, ').');
       Exit;
     end;
+
+    try
+      if not QueryServiceStatus(hSvc, ServiceStatus) then
+      begin
+        Writeln('[-] QueryServiceStatus error (code ', GetLastError, ').');
+        Exit;
+      end;
+
+      if ServiceStatus.dwCurrentState = SERVICE_RUNNING then
+      begin
+        Writeln('[+] Service is already running.');
+        Exit;
+      end;
+      pch := nil;
+      if not StartService(hSvc, 0, pch) then
+      begin
+        Writeln('[-] StartService error (code ', GetLastError, ').');
+        Exit;
+      end;
+    finally
+      CloseServiceHandle(hSvc);
+    end;
+  finally
+    CloseServiceHandle(hSC);
   end;
-  CloseServiceHandle(hSvc);
-  CloseServiceHandle(hSC);
 end;
 
 procedure CheckTermsrvProcess;
@@ -582,28 +582,44 @@ end;
 procedure ResetServiceDll;
 var
   Reg: TRegistry;
-  Code: DWORD;
+  RegKey: string;
 begin
+  // Determine the registry key to open
+  RegKey := '\SYSTEM\CurrentControlSet\Services\TermService\Parameters';
+
+  // Create the TRegistry object with appropriate access rights
   if Arch = 64 then
     Reg := TRegistry.Create(KEY_WRITE or KEY_WOW64_64KEY)
   else
-    Reg := TRegistry.Create;
-  Reg.RootKey := HKEY_LOCAL_MACHINE;
-  if not Reg.OpenKey('\SYSTEM\CurrentControlSet\Services\TermService\Parameters', True) then
-  begin
-    Code := GetLastError;
-    Writeln('[-] OpenKey error (code ', Code, ').');
-    Halt(Code);
-  end;
+    Reg := TRegistry.Create(KEY_WRITE);
+
   try
+    // Set the root key to HKEY_LOCAL_MACHINE
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+
+    // Attempt to open the registry key
+    if not Reg.OpenKey(RegKey, True) then
+      raise Exception.CreateFmt('OpenKey error (code %d).', [GetLastError]);
+
+    // Attempt to write the ServiceDll value
     Reg.WriteExpandString('ServiceDll', '%SystemRoot%\System32\termsrv.dll');
   except
-    Writeln('[-] WriteExpandString error.');
-    Halt(ERROR_ACCESS_DENIED);
+    on E: ERegistryException do
+    begin
+      Writeln(Format('[-] Registry error: %s', [E.Message]));
+      Halt(ERROR_ACCESS_DENIED);
+    end;
+    on E: Exception do
+    begin
+      Writeln(Format('[-] Error: %s', [E.Message]));
+      Halt(ERROR_ACCESS_DENIED);
+    end;
+    // Ensure the registry key is closed and the TRegistry object is freed
   end;
   Reg.CloseKey;
   Reg.Free;
 end;
+
 
 procedure ExtractRes(ResName, Path: String);
 var
@@ -640,18 +656,23 @@ begin
   Str.Free;
 end;
 
-function GitINIFile(var Content: String): Boolean;
+function GitINIFile(var Content: String; INI_source: String): Boolean;
 const
-  URL = 'https://api.rpyf.top/rdpwrap.ini';
+  default_url = 'https://api.rpyf.top/rdpwrap.ini';
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
   Str: String;
   Buffer: Array[0..1023] of Byte;
   BytesRead: DWORD;
+  URL: String;
 begin
   Result := False;
   Content := '';
+  if INI_source = '' then
+    URL := default_url
+  else
+      URL := INI_source;
 
   // Initialize WinINet
   NetHandle := InternetOpen('RDP Wrapper Update', INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
@@ -697,7 +718,7 @@ begin
   begin
     Writeln('[*] Downloading latest INI file...');
     OnlineINI := TStringList.Create;
-    if GitINIFile(S) then begin
+    if GitINIFile(S, '') then begin
       OnlineINI.Text := S;
       S := ExtractFilePath(ExpandPath(WrapPath)) + 'rdpwrap.ini';
       OnlineINI.SaveToFile(S);
@@ -762,35 +783,65 @@ end;
 procedure DeleteFiles;
 var
   Code: DWORD;
-  FullPath, Path: String;
+  FullPath, Path, RdpWrapIniPath: String;
+  SearchRec: TSearchRec;
 begin
   FullPath := ExpandPath(TermServicePath);
   Path := ExtractFilePath(FullPath);
+  RdpWrapIniPath := Path + 'rdpwrap.ini';
 
-  if not DeleteFile(PWideChar(Path + 'rdpwrap.ini')) then
+  if not DeleteFile(PWideChar(RdpWrapIniPath)) then
   begin
     Code := GetLastError;
-    Writeln('[-] DeleteFile error (code ', Code, ').');
+    Writeln('[-] DeleteFile error (code ', Code, ') for file: ', RdpWrapIniPath);
     Exit;
   end;
-  Writeln('[+] Removed file: ', Path + 'rdpwrap.ini');
+  Writeln('[+] Removed file: ', RdpWrapIniPath);
 
   if not DeleteFile(PWideChar(FullPath)) then
   begin
     Code := GetLastError;
-    Writeln('[-] DeleteFile error (code ', Code, ').');
+    Writeln('[-] DeleteFile error (code ', Code, ') for file: ', FullPath);
     Exit;
   end;
   Writeln('[+] Removed file: ', FullPath);
 
-  if not RemoveDirectory(PWideChar(ExtractFilePath(ExpandPath(TermServicePath)))) then
+  // Delete all files and subdirectories within the directory
+  if FindFirst(Path + '*.*', faAnyFile, SearchRec) = 0 then
+  begin
+    repeat
+      if (SearchRec.Attr and faDirectory) = faDirectory then
+      begin
+        if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+        begin
+          if not RemoveDir(Path + SearchRec.Name) then
+          begin
+            Code := GetLastError;
+            Writeln('[-] RemoveDir error (code ', Code, ') for directory: ', Path + SearchRec.Name);
+          end;
+        end;
+      end
+      else
+      begin
+        if not DeleteFile(PWideChar(Path + SearchRec.Name)) then
+        begin
+          Code := GetLastError;
+          Writeln('[-] DeleteFile error (code ', Code, ') for file: ', Path + SearchRec.Name);
+        end;
+      end;
+    until FindNext(SearchRec) <> 0;
+
+  end;
+
+  if not RemoveDirectory(PWideChar(Path)) then
   begin
     Code := GetLastError;
-    Writeln('[-] RemoveDirectory error (code ', Code, ').');
+    Writeln('[-] RemoveDirectory error (code ', Code, ') for folder: ', Path);
     Exit;
   end;
-  Writeln('[+] Removed folder: ', ExtractFilePath(ExpandPath(TermServicePath)));
+  Writeln('[+] Removed folder: ', Path);
 end;
+
 
 function GetFileVersion(const FileName: TFileName; var FileVersion: FILE_VERSION): Boolean;
 type
@@ -1083,7 +1134,7 @@ begin
 end;
 
 
-procedure CheckUpdate;
+procedure CheckUpdate(source: String);
 var
   INIPath, S: String;
   Str: TStringList;
@@ -1095,7 +1146,7 @@ begin
   Writeln('[*] Current update date: ',
     Format('%d.%.2d.%.2d', [OldDate div 10000, OldDate div 100 mod 100, OldDate mod 100]));
 
-  if not GitINIFile(S) then begin
+  if not GitINIFile(S, source) then begin
     Writeln('[-] Failed to download latest INI from GitHub.');
     Halt(ERROR_ACCESS_DENIED);
   end;
@@ -1163,13 +1214,14 @@ begin
   ) then
   begin
     Writeln('USAGE:');
-    Writeln('RDPWInst.exe [-l|-i[-s][-o]|-w|-u[-k]|-r]');
+    Writeln('RDPWInst.exe [-l|-i[-s][-o]|-w[url]|-u[-k]|-r]');
     Writeln('');
     Writeln('-l          display the license agreement');
     Writeln('-i          install wrapper to Program Files folder (default)');
     Writeln('-i -s       install wrapper to System32 folder');
     Writeln('-i -o       online install mode (loads latest INI file)');
     Writeln('-w          get latest update for INI file');
+    Writeln('-w URL      get latest update for INI file from custom source');
     Writeln('-u          uninstall wrapper');
     Writeln('-u -k       uninstall wrapper and keep settings');
     Writeln('-r          force restart Terminal Services');
@@ -1309,7 +1361,10 @@ begin
       Halt(ERROR_INVALID_FUNCTION);
     end;
     Writeln('[*] Checking for updates...');
-    CheckUpdate;
+    if paramStr(2) = '' then
+      CheckUpdate('')
+    else
+      CheckUpdate(paramStr(2));
   end;
 
   if ParamStr(1) = '-r' then
