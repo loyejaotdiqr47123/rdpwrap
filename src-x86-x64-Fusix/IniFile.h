@@ -54,8 +54,8 @@ typedef struct _INI_SECTION_VARLIST_ENTRY
 typedef struct _INI_SECTION_VARLIST
 {
 	DWORD EntriesCount;
-	INI_SECTION_VARLIST_ENTRY *NamesEntries;
-    INI_SECTION_VARLIST_ENTRY *ValuesEntries;
+	[length_is(EntriesCount)] INI_SECTION_VARLIST_ENTRY *NamesEntries;
+	[length_is(EntriesCount)] INI_SECTION_VARLIST_ENTRY *ValuesEntries;
 } INI_SECTION_VARLIST, *PINI_SECTION_VARLIST;
 
 // end
@@ -71,14 +71,14 @@ typedef struct _INI_SECTION
 {
 	char SectionName[MAX_STRING_LEN];
 	DWORD VariablesCount;
-	INI_SECTION_VARIABLE *Variables;
+	[length_is(SectionCount)]	INI_SECTION_VARIABLE *Variables;
 
 } INI_SECTION, *PINI_SECTION;
 
 typedef struct _INI_DATA
 {
 	DWORD SectionCount;
-	INI_SECTION *Section;
+	[length_is(SectionCount)] INI_SECTION *Section;
 } INI_DATA, *PINI_DATA;
 
 class INI_FILE
