@@ -539,7 +539,7 @@ void Hook()
 	if (!(IniFile->GetVariableInSection("Main", "LogFile", &LogFileVar)))
 	{
 		GetModuleFileName(GetCurrentModule(), LogFile, 255);
-		for (DWORD i = wcslen(LogFile); i > 0; i--)
+		for (size_t i = wcslen(LogFile); i > 0; i--)
 		{
 			if (LogFile[i] == L'\\')
 			{
