@@ -1359,9 +1359,8 @@ var
   I: Integer;
 begin
   Writeln('RDP Wrapper Library v1.8.6');
-  Writeln('Installer v2.6');
   Writeln('Copyright (C) Stas''M Corp. 2017');
-  Writeln('Copyright bobo 2024');
+  Writeln('Edited by bobo 2024');
   Writeln('');
 
   if (ParamCount < 1)
