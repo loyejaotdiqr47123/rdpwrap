@@ -511,12 +511,12 @@ void Hook()
 	WriteToLog("Loading configuration...\r\n");
 
 	GetModuleFileName(GetCurrentModule(), ConfigFile, 255);
-	for (DWORD i = wcslen(ConfigFile); i > 0; i--)
-	{
+
+	for (size_t i = wcslen(ConfigFile); i > 0; --i)	{
 		if (ConfigFile[i] == '\\')
 		{
 			memset(&ConfigFile[i + 1], 0x00, ((256 - (i + 1))) * 2);
-			memcpy(&ConfigFile[i + 1], L"rdpwrap.ini", strlen("rdpwrap.ini") * 2);
+			memcpy(&ConfigFile[i + 1], L"rdpwrap.ini", wcslen(L"rdpwrap.ini") * sizeof(wchar_t));
 			break;
 		}
 	}
@@ -541,10 +541,14 @@ void Hook()
 		GetModuleFileName(GetCurrentModule(), LogFile, 255);
 		for (DWORD i = wcslen(LogFile); i > 0; i--)
 		{
-			if (LogFile[i] == '\\')
+			if (LogFile[i] == L'\\')
 			{
-				memset(&LogFile[i + 1], 0x00, ((256 - (i + 1))) * 2);
-				memcpy(&LogFile[i + 1], L"rdpwrap.txt", strlen("rdpwrap.txt") * 2);
+				size_t remainingSpace = 256 - static_cast<size_t>(i + 1);
+				if (remainingSpace > 0)
+				{
+					wmemset(&LogFile[i + 1], L'\0', remainingSpace);
+					wcscpy_s(&LogFile[i + 1], remainingSpace, L"rdpwrap.txt");
+				}
 				break;
 			}
 		}

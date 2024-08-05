@@ -97,28 +97,32 @@ bool INI_FILE::CreateStringsMap()
 
 int INI_FILE::StrTrim(char *Str)
 {
-	int i = 0, j;
+	size_t len = strlen(Str);
+	size_t i = 0, j;
 	while ((Str[i] == ' ') || (Str[i] == '\t'))
 	{
 		i++;
 	}
 	if (i > 0)
 	{
-		for (j = 0; j < strlen(Str); j++)
+		for (j = 0; j < len; j++)
 		{
 			Str[j] = Str[j + i];
 		}
 		Str[j] = '\0';
 	}
 
-	i = strlen(Str) - 1;
-	while ((Str[i] == ' ') || (Str[i] == '\t'))
+	if (len > 0)
 	{
-		i--;
-	}
-	if (i < (strlen(Str) - 1))
-	{
-		Str[i + 1] = '\0';
+		i = len - 1;
+		while ((Str[i] == ' ') || (Str[i] == '\t'))
+		{
+			i--;
+		}
+		if (i < (len - 1))
+		{
+			Str[i + 1] = '\0';
+		}
 	}
 	return 0;
 }
@@ -410,7 +414,7 @@ bool INI_FILE::GetVariableInSection(char *SectionName, char *VariableName, INI_V
 	if (!Status)
 		return Status;
 
-	DWORD ValueLen = strlen(Variable.VariableValue);
+	size_t ValueLen = strlen(Variable.VariableValue);
 	if ((ValueLen % 2) != 0)
 		return false;
 
