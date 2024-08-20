@@ -1,32 +1,32 @@
-﻿========================================================================
-    БИБЛИОТЕКА ДИНАМИЧЕСКОЙ КОМПОНОВКИ. Обзор проекта RDPWrap
+﻿========================================================================  
+    DYNAMIC LINK LIBRARY. Overview of the RDPWrap Project  
 ========================================================================
 
-Эта библиотека DLL RDPWrap создана автоматически с помощью мастера приложений.
+This RDPWrap DLL library was automatically created using the application wizard.
 
-В этом файле представлена сводка содержимого всех файлов, входящих в состав приложения RDPWrap.
+This file provides a summary of the contents of all files included in the RDPWrap application.
 
 
-RDPWrap.vcxproj
-    Это основной файл проекта VC++, создаваемый с помощью мастера приложений. Он содержит данные о версии языка Visual C++, использованной для создания файла, а также сведения о платформах, конфигурациях и функциях проекта, выбранных с помощью мастера приложений.
+RDPWrap.vcxproj  
+    This is the main VC++ project file created using the application wizard. It contains information about the version of Visual C++ used to create the file, as well as details about the platforms, configurations, and features of the project selected via the wizard.
 
-RDPWrap.vcxproj.filters
-    Это файл фильтров для проектов VC++, созданный с помощью мастера приложений. Он содержит сведения о сопоставлениях между файлами в вашем проекте и фильтрами. Эти сопоставления используются в среде IDE для группировки файлов с одинаковыми расширениями в одном узле (например CPP-файлы сопоставляются с фильтром "Исходные файлы").
+RDPWrap.vcxproj.filters  
+    This is a filter file for VC++ projects created using the application wizard. It contains information about the mappings between files in your project and filters. These mappings are used in the IDE environment to group files with the same extensions under one node (for example, CPP files are mapped to the "Source Files" filter).
 
-RDPWrap.cpp
-    Основной исходный файл библиотеки DLL.
+RDPWrap.cpp  
+    This is the main source file of the DLL library.
 
-	При создании этой библиотеки DLL не выполняется экспорт символов. Поэтому при ее построении не создается LIB-файл. Если в этом проекте требуется определить зависимость от другого проекта, необходимо добавить код для экспорта символов из библиотеки DLL, чтобы обеспечить создание библиотеки экспорта, или задать значение «Да» для свойства «Пропустить входную библиотеку» на странице общих свойств папки «Компоновщик» в диалоговом окне «Страницы свойств» проекта.
-
-/////////////////////////////////////////////////////////////////////////////
-Другие стандартные файлы:
-
-StdAfx.h, StdAfx.cpp
-    Эти файлы используются для построения файла предкомпилированного заголовка (PCH) с именем RDPWrap.pch и файла предкомпилированных типов с именем StdAfx.obj.
+    When creating this DLL library, there is no symbol export performed. Therefore, no LIB file is created when it is built. If this project needs to define a dependency on another project, you will need to add code to export symbols from the DLL library to ensure the creation of an export library, or set the "Skip Import Library" option to "Yes" in the "Linker" section of the project's "Property Pages".
 
 /////////////////////////////////////////////////////////////////////////////
-Прочие примечания.
+Other standard files:
 
-С помощью комментариев «TODO:» в мастере приложений обозначаются фрагменты исходного кода, которые необходимо дополнить или изменить.
+StdAfx.h, StdAfx.cpp  
+    These files are used to build a precompiled header file (PCH) named RDPWrap.pch and a precompiled types file named StdAfx.obj.
+
+/////////////////////////////////////////////////////////////////////////////
+Other notes.
+
+Code fragments that need to be completed or modified are marked with “TODO:” comments in the application wizard.
 
 /////////////////////////////////////////////////////////////////////////////
