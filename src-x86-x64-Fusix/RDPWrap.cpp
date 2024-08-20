@@ -38,23 +38,25 @@ typedef struct
 } FILE_VERSION;
 
 #ifdef _WIN64
+#pragma pack(push, 1) // Set alignment to 1 byte
 typedef unsigned long long PLATFORM_DWORD;
-struct FARJMP
-{	// x64 far jump | opcode | assembly
-	BYTE MovOp;		// 48	mov rax, ptr
-	BYTE MovRegArg;	// B8
-	DWORD64 MovArg;	// PTR
-	BYTE PushRaxOp; // 50	push rax
-	BYTE RetOp;		// C3	retn
+struct FARJMP {
+	BYTE MovOp;      // 48 mov rax, ptr
+	BYTE MovRegArg;  // B8
+	DWORD64 MovArg;  // PTR
+	BYTE PushRaxOp;  // 50 push rax
+	BYTE RetOp;      // C3 retn
 };
+#pragma pack(pop) // Restore default alignment
 #else
+#pragma pack(push, 1) // Set alignment to 1 byte
 typedef unsigned long PLATFORM_DWORD;
-struct FARJMP
-{	// x86 far jump | opcode | assembly
-	BYTE PushOp;	// 68	push ptr
-	DWORD PushArg;	// PTR
-	BYTE RetOp;		// C3	retn
+struct FARJMP {
+	BYTE PushOp;     // 68 push ptr
+	DWORD PushArg;   // PTR
+	BYTE RetOp;      // C3 retn
 };
+#pragma pack(pop) // Restore default alignment
 #endif
 
 FARJMP Old_SLGetWindowsInformationDWORD, Stub_SLGetWindowsInformationDWORD;
