@@ -35,7 +35,7 @@ jobs:
 
     - name: 🎄 Download rdpwrap.ini in sebaxakerhtc/rdpwrap.ini
       run: |
-        mv res/res/rdpwrap.ini res/rdpwrap.ini.bak
+        mv res/rdpwrap.ini res/rdpwrap.ini.bak
         curl -L https://github.com/sebaxakerhtc/rdpwrap.ini/raw/master/rdpwrap.ini -o res/rdpwrap.ini
         echo "🎄 Downloaded rdpwrap.ini to res directory."
     
