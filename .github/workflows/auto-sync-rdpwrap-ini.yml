@@ -45,15 +45,15 @@ jobs:
         # compare rdpwrap.ini and rdpwrap.ini.bak
         if diff -q res/rdpwrap.ini bak/res/rdpwrap.ini.bak > /dev/null; then
           echo "🎇 No differences found."
-          # echo "::set-output name=diff::false"
+          et-output name=diff::true"
+          echo "diff=true" >> $GITHUB_OUTPUT
+        fi
+# echo "::set-output name=diff::false"
           echo "diff=false" >> $GITHUB_OUTPUT
 
         else
           echo "🎃 Differences found."
-          # echo "::set-output name=diff::true"
-          echo "diff=true" >> $GITHUB_OUTPUT
-        fi
-
+          # echo "::s
     - name: 🧨 Commit files
       if: steps.diff-check.outputs.diff == 'true'
       run: |
