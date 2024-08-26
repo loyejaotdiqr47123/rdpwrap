@@ -43,7 +43,7 @@ jobs:
       id: diff-check
       run: |
         # compare rdpwrap.ini and rdpwrap.ini.bak
-        if diff -q rdpwrap.ini rdpwrap.ini.bak > /dev/null; then
+        if diff -q res/rdpwrap.ini res/rdpwrap.ini.bak > /dev/null; then
           echo "🎇 No differences found."
           echo "::set-output name=diff::false"
         else
