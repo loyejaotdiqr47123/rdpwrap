@@ -35,7 +35,7 @@ jobs:
 
     - name: 🎄 Download rdpwrap.ini in sebaxakerhtc/rdpwrap.ini
       run: |
-        mv res/rdpwrap.ini res/rdpwrap.ini.bak
+        mv res/rdpwrap.ini bak/res/rdpwrap.ini.bak
         curl -L https://github.com/sebaxakerhtc/rdpwrap.ini/raw/master/rdpwrap.ini -o res/rdpwrap.ini
         echo "🎄 Downloaded rdpwrap.ini to res directory."
     
@@ -43,7 +43,7 @@ jobs:
       id: diff-check
       run: |
         # compare rdpwrap.ini and rdpwrap.ini.bak
-        if diff -q res/rdpwrap.ini res/rdpwrap.ini.bak > /dev/null; then
+        if diff -q res/rdpwrap.ini bak/res/rdpwrap.ini.bak > /dev/null; then
           echo "🎇 No differences found."
           # echo "::set-output name=diff::false"
           echo "diff=false" >> $GITHUB_OUTPUT
