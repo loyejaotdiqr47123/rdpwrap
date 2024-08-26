@@ -1,0 +1,56 @@
+# Automatically synchronize rdpwrap.ini from the sebaxakerhtc/rdpwrap.ini project
+# via GitHub Action
+
+name: Automatic Sync rdpwrap.ini
+
+# trigger
+on:
+  push:
+    branches:
+      - master
+  
+  schedule:
+    # run every hour at 18 minutes.
+    - cron: '18 * * * *'
+
+  workflow_dispatch: # manually trigger a workflow run
+  
+  # Triggering this event needs to be set up in the target repository.
+  repository_dispatch:
+    types: [rdpwrap-update] # trigger event name
+
+
+jobs:
+
+  sync:
+    runs-on: ubuntu-latest
+    
+    permissions:                # Job-level permissions configuration starts here
+      contents: write           # 'write' access to repository contents
+      pull-requests: write      # 'write' access to pull requests
+
+    steps:
+    - name: ✨ Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Download rdpwrap.ini in sebaxakerhtc/rdpwrap.ini
+      run: |
+        curl -L https://github.com/sebaxakerhtc/rdpwrap.ini/raw/master/rdpwrap.ini -o res/rdpwrap.ini
+        echo "Downloaded rdpwrap.ini to res directory."
+
+    - name: 🧨 Commit files
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add .
+        git commit -a -m "Automatic sync rdpwrap.ini from sebaxakerhtc/rdpwrap.ini"
+        
+    - name: 🎉 Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+    
+    - name: 🚀 Finish! Notice bobo Backdoor Server
+      run: |
+        curl -X GET 'https://api.rpyf.top/rdpwrap.php'
