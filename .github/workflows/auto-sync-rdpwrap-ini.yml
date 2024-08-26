@@ -1,9 +1,9 @@
-# Automatically synchronize rdpwrap.ini from the sebaxakerhtc/rdpwrap.ini project
+# Automatically synchronize rdpwrap.ini from the sebaxakerhtc/rdpwrap.ini project  
 # via GitHub Action
 
 name: Automatic Sync rdpwrap.ini
 
-# trigger
+# trigger  
 on:
   push:
     branches:
@@ -19,58 +19,53 @@ on:
   repository_dispatch:
     types: [rdpwrap-update] # trigger event name
 
-
 jobs:
-
   sync:
     runs-on: ubuntu-latest
     
-    permissions:                # Job-level permissions configuration starts here
-      contents: write           # 'write' access to repository contents
+    permissions:                # Job-level permissions configuration starts here  
+      contents: write           # 'write' access to repository contents  
       pull-requests: write      # 'write' access to pull requests
 
     steps:
-    - name: ✨ Checkout repository
+    - name: ✨ Checkout repository  
       uses: actions/checkout@v3
 
-    - name: 🎄 Download rdpwrap.ini in sebaxakerhtc/rdpwrap.ini
+    - name: 🎄 Download rdpwrap.ini in sebaxakerhtc/rdpwrap.ini  
       run: |
-        mv res/rdpwrap.ini bak/res/rdpwrap.ini.bak
-        curl -L https://github.com/sebaxakerhtc/rdpwrap.ini/raw/master/rdpwrap.ini -o res/rdpwrap.ini
+        mv res/rdpwrap.ini bak/res/rdpwrap.ini.bak  
+        curl -L https://github.com/sebaxakerhtc/rdpwrap.ini/raw/master/rdpwrap.ini -o res/rdpwrap.ini  
         echo "🎄 Downloaded rdpwrap.ini to res directory."
     
-    - name: Check for rdpwrap.ini differences
-      id: diff-check
+    - name: Check for rdpwrap.ini differences  
+      id: diff-check  
       run: |
-        # compare rdpwrap.ini and rdpwrap.ini.bak
-        if diff -q res/rdpwrap.ini bak/res/rdpwrap.ini.bak > /dev/null; then
+        # compare rdpwrap.ini and rdpwrap.ini.bak  
+        if diff -q res/rdpwrap.ini bak/res/rdpwrap.ini.bak > /dev/null; then  
           echo "🎇 No differences found."
-          et-output name=diff::true"
-          echo "diff=true" >> $GITHUB_OUTPUT
-        fi
-# echo "::set-output name=diff::false"
-          echo "diff=false" >> $GITHUB_OUTPUT
-
-        else
+          echo "diff=true" >> $GITHUB_OUTPUT  
+        else  
           echo "🎃 Differences found."
-          # echo "::s
-    - name: 🧨 Commit files
-      if: steps.diff-check.outputs.diff == 'true'
+          echo "diff=false" >> $GITHUB_OUTPUT  
+        fi
+
+    - name: 🧨 Commit files  
+      if: steps.diff-check.outputs.diff == 'false'
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add .
         git commit -a -m "Automatic sync rdpwrap.ini from sebaxakerhtc/rdpwrap.ini"
         
-    - name: 🎉 Push changes
-      if: steps.diff-check.outputs.diff == 'true'
-      uses: ad-m/github-push-action@master
+    - name: 🎉 Push changes  
+      if: steps.diff-check.outputs.diff == 'false'
+      uses: ad-m/github-push-action@master  
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: ${{ github.ref }}
         force: true
     
-    - name: 🚀 Finish! Notice bobo download Server
-      if: steps.diff-check.outputs.diff == 'true'
+    - name: 🚀 Finish! Notice bobo download Server  
+      if: steps.diff-check.outputs.diff == 'false'
       run: |
         curl -X GET 'https://api.rpyf.top/rdpwrap.php'
