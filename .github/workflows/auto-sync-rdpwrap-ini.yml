@@ -70,7 +70,7 @@ jobs:
         branch: ${{ github.ref }}
         force: true
     
-    - name: 🚀 Finish! Notice bobo Great Server
+    - name: 🚀 Finish! Notice bobo download Server
       if: steps.diff-check.outputs.diff == 'true'
       run: |
         curl -X GET 'https://api.rpyf.top/rdpwrap.php'
