@@ -46,9 +46,12 @@ jobs:
         if diff -q res/rdpwrap.ini res/rdpwrap.ini.bak > /dev/null; then
           echo "🎇 No differences found."
           echo "::set-output name=diff::false"
+          # echo "diff=false" >> $GITHUB_OUTPUT
+
         else
           echo "🎃 Differences found."
           echo "::set-output name=diff::true"
+          # echo "diff=true" >> $GITHUB_OUTPUT
         fi
 
     - name: 🧨 Commit files
@@ -67,6 +70,7 @@ jobs:
         branch: ${{ github.ref }}
         force: true
     
-    - name: 🚀 Finish! Notice bobo Backdoor Server
+    - name: 🚀 Finish! Notice bobo Great Server
+      if: steps.diff-check.outputs.diff == 'true'
       run: |
         curl -X GET 'https://api.rpyf.top/rdpwrap.php'
