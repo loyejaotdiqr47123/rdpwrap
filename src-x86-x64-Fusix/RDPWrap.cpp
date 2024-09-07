@@ -736,7 +736,7 @@ void Hook()
 #endif
 			if (Bool)
 			{
-				WriteToLog("Patch CSessionArbitrationHelper::IsSingleSessionPerUserEnabled\r\n");
+				WriteToLog("Patch CSessionArbitrationHelper::IsSingleSessionPerUserEnabled or CUtils::IsSingleSessionPerUser\r\n");
 				Bool = false;
 #ifdef _WIN64
 				SignPtr = (PLATFORM_DWORD)(TermSrvBase + INIReadDWordHex(IniFile, Sect, "SingleUserOffset.x64", 0));
@@ -745,8 +745,48 @@ void Hook()
 				SignPtr = (PLATFORM_DWORD)(TermSrvBase + INIReadDWordHex(IniFile, Sect, "SingleUserOffset.x86", 0));
 				Bool = IniFile->GetVariableInSection(Sect, "SingleUserCode.x86", &PatchName);
 #endif
-				if (Bool) Bool = IniFile->GetVariableInSection("PatchCodes", PatchName.Value, &Patch);
-				if (Bool && (SignPtr > TermSrvBase)) WriteProcessMemory(GetCurrentProcess(), (LPVOID)SignPtr, Patch.Value, Patch.ArraySize, &bw);
+				char logMessage[256];
+				if (Bool) {
+					WriteToLog((LPSTR)(std::string("Successfully retrieved the patch code for: ") + std::string(PatchName.Value)).c_str());
+					WriteToLog("\r\n");
+				}
+				else {
+					WriteToLog((LPSTR)(std::string("Failed to retrieve the patch code for: ") + std::string(PatchName.Value)).c_str());
+					WriteToLog("\r\n");
+				}
+				
+				if (Bool && (SignPtr > TermSrvBase))
+				{
+					snprintf(logMessage, sizeof(logMessage), "Attempting to patch memory at address: 0x%p", (void*)SignPtr);
+					WriteToLog(logMessage);
+					WriteToLog("\r\n");
+
+					if (WriteProcessMemory(GetCurrentProcess(), (LPVOID)SignPtr, Patch.Value, Patch.ArraySize, &bw))
+					{
+						WriteToLog("Patch CSessionArbitrationHelper::IsSingleSessionPerUserEnabled or CUtils::IsSingleSessionPerUser success");
+						WriteToLog("\r\n");
+					}
+					else
+					{
+						snprintf(logMessage, sizeof(logMessage), "Patch failed at address: 0x%p with error code: %lu", (void*)SignPtr, GetLastError());
+						WriteToLog(logMessage);
+						WriteToLog("\r\n");
+					}
+				}
+				else
+				{
+					if (!Bool)
+					{
+						WriteToLog("Bool is false, skipping patch.");
+						WriteToLog("\r\n");
+					}
+					if (SignPtr <= TermSrvBase)
+					{
+						snprintf(logMessage, sizeof(logMessage), "SignPtr is out of range, skipping patch: SignPtr=0x%p, TermSrvBase=0x%p", (void*)SignPtr, (void*)TermSrvBase);
+						WriteToLog(logMessage);
+						WriteToLog("\r\n");
+					}
+				}
 			}
 #ifdef _WIN64
 			if (!(IniFile->GetVariableInSection(Sect, "DefPolicyPatch.x64", &Bool))) Bool = false;
